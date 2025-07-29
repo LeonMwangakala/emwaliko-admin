@@ -490,6 +490,17 @@ class ApiService {
     });
   }
 
+  async updatePassword(data: {
+    current_password: string;
+    new_password: string;
+    new_password_confirmation: string;
+  }) {
+    return this.request('/profile/password', {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
   // Location methods
   async getCountries() {
     return this.request(API_ENDPOINTS.LOCATIONS.COUNTRIES);

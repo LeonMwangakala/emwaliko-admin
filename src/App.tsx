@@ -25,6 +25,7 @@ import CardTypes from "./pages/Settings/CardTypes";
 import CardClasses from "./pages/Settings/CardClasses";
 import Packages from "./pages/Settings/Packages";
 import Customers from "./pages/Settings/Customers";
+import Profile from "./pages/Settings/Profile";
 import Events from "./pages/Events";
 import ViewEvent from "./pages/ViewEvent";
 import Sales from "./pages/Sales";
@@ -109,7 +110,7 @@ function AppRoutes() {
             <Route path="/bar-chart" element={<BarChart />} />
 
             {/* Settings */}
-            <Route path="/settings/profile" element={<UserProfiles />} />
+            <Route path="/settings/profile" element={<Profile />} />
             <Route path="/settings/event-types" element={<EventTypes />} />
             <Route path="/settings/card-types" element={<CardTypes />} />
             <Route path="/settings/card-classes" element={<CardClasses />} />

@@ -182,7 +182,7 @@ const Home: React.FC = () => {
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.total_guests || 0}</p>
                 </div>
               </div>
-            </div>
+        </div>
 
             {/* Total Sales */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -199,7 +199,7 @@ const Home: React.FC = () => {
                   <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(dashboardStats?.total_sales || 0)}</p>
                 </div>
               </div>
-            </div>
+        </div>
 
             {/* SMS Balance */}
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6">
@@ -354,7 +354,7 @@ const Home: React.FC = () => {
               </svg>
               <span className="font-medium text-gray-900 dark:text-white">Generate Invoice</span>
             </button>
-          </div>
+        </div>
         </ComponentCard>
       </div>
     </>
