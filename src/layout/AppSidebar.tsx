@@ -1,63 +1,132 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useLocation } from "react-router";
-
-// Assume these icons are imported from an icon library
 import {
-  BoxCubeIcon,
-  CalenderIcon,
-  ChevronDownIcon,
   GridIcon,
-  HorizontaLDots,
-  ListIcon,
-  PageIcon,
+  UserIcon,
+  CalenderIcon,
+  UserCircleIcon,
   PieChartIcon,
   PlugInIcon,
-  TableIcon,
-  UserCircleIcon,
+  PageIcon,
+  BoxIcon,
+  BoxCubeIcon,
+  BoxIconLine,
+  ChevronDownIcon,
+  HorizontaLDots,
+  DollarLineIcon,
 } from "../icons";
 import { useSidebar } from "../context/SidebarContext";
 import SidebarWidget from "./SidebarWidget";
+import { useAuth } from "../context/AuthContext";
 
-type NavItem = {
-  name: string;
+// Type definitions
+interface NavItem {
   icon: React.ReactNode;
+  name: string;
   path?: string;
-  subItems?: { name: string; path: string; pro?: boolean; new?: boolean }[];
+  subItems?: Array<{
+    name: string;
+    path: string;
+    icon?: React.ReactNode;
+    pro?: boolean;
+    new?: boolean;
+  }>;
+}
+
+type MenuItem = NavItem | {
+  icon: React.ReactNode;
+  name: string;
+  path: string;
+} | {
+  icon: React.ReactNode;
+  name: string;
+  subItems: Array<{
+    name: string;
+    path: string;
+    icon?: React.ReactNode;
+    pro?: boolean;
+    new?: boolean;
+  }>;
 };
 
-const navItems: NavItem[] = [
+// Menu config for admin users
+const adminNavItems = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
-    subItems: [{ name: "Ecommerce", path: "/", pro: false }],
+    path: "/dashboard",
+  },
+  {
+    icon: <UserIcon />,
+    name: "Customers",
+    path: "/customers",
   },
   {
     icon: <CalenderIcon />,
-    name: "Calendar",
-    path: "/calendar",
+    name: "Events",
+    path: "/events",
   },
   {
-    icon: <UserCircleIcon />,
-    name: "User Profile",
-    path: "/profile",
+    icon: <DollarLineIcon />,
+    name: "Sales",
+    path: "/sales",
   },
   {
-    name: "Forms",
-    icon: <ListIcon />,
-    subItems: [{ name: "Form Elements", path: "/form-elements", pro: false }],
-  },
-  {
-    name: "Tables",
-    icon: <TableIcon />,
-    subItems: [{ name: "Basic Tables", path: "/basic-tables", pro: false }],
-  },
-  {
-    name: "Pages",
     icon: <PageIcon />,
+    name: "Invoices",
+    path: "/invoices",
+  },
+  {
+    icon: <PieChartIcon />,
+    name: "Reports",
+    path: "/reports",
+  },
+  {
+    icon: <UserIcon />,
+    name: "Users",
+    path: "/users",
+  },
+  {
+    icon: <PlugInIcon />,
+    name: "Settings",
     subItems: [
-      { name: "Blank Page", path: "/blank", pro: false },
-      { name: "404 Error", path: "/error-404", pro: false },
+      { name: "Profile", path: "/settings/profile", icon: <UserCircleIcon /> },
+      { name: "Event Types", path: "/settings/event-types", icon: <PageIcon /> },
+      { name: "Card Types", path: "/settings/card-types", icon: <BoxIcon /> },
+      { name: "Card Classes", path: "/settings/card-classes", icon: <BoxCubeIcon /> },
+      { name: "Packages", path: "/settings/packages", icon: <BoxIconLine /> },
+      {
+        name: "General Settings",
+        path: "/settings/general",
+        icon: <PageIcon />,
+        adminOnly: true,
+      },
+      {
+        name: "Payment Settings",
+        path: "/settings/payment",
+        icon: <PageIcon />,
+        adminOnly: true,
+      }
     ],
+  },
+];
+
+// Menu config for normal users
+const userNavItems = [
+  {
+    icon: <GridIcon />,
+    name: "Dashboard",
+    path: "/dashboard",
+  },
+  {
+    icon: <UserIcon />,
+    name: "Customers",
+    path: "/customers",
+  },
+  {
+    icon: <CalenderIcon />,
+    name: "Events",
+    path: "/events",
   },
 ];
 
@@ -95,6 +164,10 @@ const othersItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
+  const { user } = useAuth();
+
+  // Determine menu based on role (role_id === 1 is admin)
+  const navItems = user && user.role_id === 1 ? adminNavItems : userNavItems;
 
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";
@@ -116,7 +189,7 @@ const AppSidebar: React.FC = () => {
     ["main", "others"].forEach((menuType) => {
       const items = menuType === "main" ? navItems : othersItems;
       items.forEach((nav, index) => {
-        if (nav.subItems) {
+        if ('subItems' in nav && nav.subItems) {
           nav.subItems.forEach((subItem) => {
             if (isActive(subItem.path)) {
               setOpenSubmenu({
@@ -164,7 +237,7 @@ const AppSidebar: React.FC = () => {
     <ul className="flex flex-col gap-4">
       {items.map((nav, index) => (
         <li key={nav.name}>
-          {nav.subItems ? (
+          {'subItems' in nav && nav.subItems ? (
             <button
               onClick={() => handleSubmenuToggle(index, menuType)}
               className={`menu-item group ${
@@ -201,7 +274,7 @@ const AppSidebar: React.FC = () => {
               )}
             </button>
           ) : (
-            nav.path && (
+            'path' in nav && nav.path && (
               <Link
                 to={nav.path}
                 className={`menu-item group ${
@@ -223,7 +296,7 @@ const AppSidebar: React.FC = () => {
               </Link>
             )
           )}
-          {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
+          {'subItems' in nav && nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
             <div
               ref={(el) => {
                 subMenuRefs.current[`${menuType}-${index}`] = el;
@@ -358,17 +431,13 @@ const AppSidebar: React.FC = () => {
                     : "justify-start"
                 }`}
               >
-                {isExpanded || isHovered || isMobileOpen ? (
-                  "Others"
-                ) : (
-                  <HorizontaLDots />
-                )}
               </h2>
-              {renderMenuItems(othersItems, "others")}
+              {/* Only render navItems (main menu), remove othersItems rendering */}
+              {/* {renderMenuItems(navItems, "main")} */}
             </div>
           </div>
         </nav>
-        {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null}
+        {/* {isExpanded || isHovered || isMobileOpen ? <SidebarWidget /> : null} */}
       </div>
     </aside>
   );

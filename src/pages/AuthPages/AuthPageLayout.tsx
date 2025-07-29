@@ -12,11 +12,16 @@ export default function AuthLayout({
     <div className="relative p-6 bg-white z-1 dark:bg-gray-900 sm:p-0">
       <div className="relative flex flex-col justify-center w-full h-screen lg:flex-row dark:bg-gray-900 sm:p-0">
         {children}
-        <div className="items-center hidden w-full h-full lg:w-1/2 bg-brand-950 dark:bg-white/5 lg:grid">
-          <div className="relative flex items-center justify-center z-1">
-            {/* <!-- ===== Common Grid Shape Start ===== --> */}
-            <GridShape />
-            <div className="flex flex-col items-center max-w-xs">
+        <div
+          className="items-center hidden w-full h-full lg:w-1/2 bg-cover bg-center lg:grid"
+          style={{ backgroundImage: "url('/images/bg-image/signIn-img.jpg')" }}
+        >
+          <div className="relative flex items-center justify-center z-1 w-full h-full">
+            {/* White overlay */}
+            <div className="absolute inset-0 bg-white/85"></div>
+            {/* Content above overlay */}
+            <div className="relative z-10 flex flex-col items-center max-w-xs">
+              <GridShape />
               <Link to="/" className="block mb-4">
                 <img
                   width={231}
@@ -25,8 +30,8 @@ export default function AuthLayout({
                   alt="Logo"
                 />
               </Link>
-              <p className="text-center text-gray-400 dark:text-white/60">
-                Free and Open-Source Tailwind CSS Admin Dashboard Template
+              <p className="text-center text-gray-700 dark:text-white/80">
+              Invite. Connect. Celebrate. All in One Seamless Experience
               </p>
             </div>
           </div>
