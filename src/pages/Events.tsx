@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router";
-import NotAuthorized from "./OtherPage/NotAuthorized";
 import { apiService } from "../services/api";
 import PageMeta from "../components/common/PageMeta";
 import PageBreadcrumb from "../components/common/PageBreadCrumb";
@@ -498,7 +497,7 @@ const Events: React.FC = () => {
                       label="Event Date *"
                       placeholder="Select event date"
                       defaultDate={formData.event_date ? new Date(formData.event_date) : undefined}
-                      onChange={(selectedDates, dateStr) => {
+                      onChange={(_, dateStr) => {
                         setFormData({ ...formData, event_date: dateStr });
                       }}
                     />
@@ -700,7 +699,7 @@ const Events: React.FC = () => {
                       label="Notification Date"
                       placeholder="Select notification date"
                       defaultDate={formData.notification_date ? new Date(formData.notification_date) : undefined}
-                      onChange={(selectedDates, dateStr) => {
+                      onChange={(_, dateStr) => {
                         setFormData({ ...formData, notification_date: dateStr });
                       }}
                     />

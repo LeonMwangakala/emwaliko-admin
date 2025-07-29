@@ -40,8 +40,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [showAutoLogoutModal, setShowAutoLogoutModal] = useState(false);
   
   // Use refs for timers to avoid dependency issues
-  const inactivityTimerRef = useRef<number | null>(null);
-  const warningTimerRef = useRef<number | null>(null);
+  const warningTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Auto-logout configuration
   const INACTIVITY_TIMEOUT = 10 * 60 * 1000; // 10 minutes

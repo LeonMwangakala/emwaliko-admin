@@ -54,7 +54,6 @@ const SendNotificationsModal: React.FC<SendNotificationsModalProps> = ({
   const [error, setError] = useState('');
   const [templateType, setTemplateType] = useState<TemplateType>('invitation');
   const [availableGuests, setAvailableGuests] = useState<Guest[]>([]);
-  const [totalGuests, setTotalGuests] = useState(0);
   const [filteredOutCount, setFilteredOutCount] = useState(0);
   const [templateLoaded, setTemplateLoaded] = useState(false);
 
@@ -78,7 +77,6 @@ const SendNotificationsModal: React.FC<SendNotificationsModalProps> = ({
       // Initially, all guests are available (will be filtered when notification type is selected)
       setAvailableGuests(guestsData);
       setSelectedGuests(guestsData.map((guest: Guest) => guest.id));
-      setTotalGuests(guestsData.length);
       setFilteredOutCount(0);
     } catch (error) {
       console.error('Error fetching event and guests:', error);
@@ -95,14 +93,12 @@ const SendNotificationsModal: React.FC<SendNotificationsModalProps> = ({
       
       setAvailableGuests(response.available_guests);
       setSelectedGuests(response.available_guests.map((guest: Guest) => guest.id));
-      setTotalGuests(response.total_guests);
       setFilteredOutCount(response.filtered_out_count);
     } catch (error) {
       console.error('Error filtering guests:', error);
       // Fallback to all guests if filtering fails
       setAvailableGuests(guests);
       setSelectedGuests(guests.map(guest => guest.id));
-      setTotalGuests(guests.length);
       setFilteredOutCount(0);
     }
   }, [event, guests]);

@@ -237,7 +237,7 @@ const AddGuestModal: React.FC<AddGuestModalProps> = ({
           <PhoneInput
             value={formData.phone_number}
             onChange={(value) => handleInputChange('phone_number', value)}
-            onValidationChange={(isValid, validation) => setPhoneValidation(validation)}
+            onValidationChange={(_, validation) => setPhoneValidation(validation)}
             placeholder="e.g., 0712345678 or +1234567890"
             required
             label="Phone Number *"

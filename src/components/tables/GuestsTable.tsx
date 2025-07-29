@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
+import Pagination from "../common/Pagination";
+import { formatDate } from "../../utils/dateUtils";
 import { PhoneNumberValidator } from '../../utils/phoneValidation';
 import { Guest } from '../../types/guest';
 import { PaginationProps } from '../../types/pagination';
@@ -225,122 +227,6 @@ const GuestsTable: React.FC<GuestsTableProps> = ({
           <Pagination {...pagination} />
         </div>
       )}
-    </div>
-  );
-};
-
-// Pagination Component
-const Pagination: React.FC<PaginationProps> = ({
-  currentPage,
-  totalPages,
-  totalItems,
-  itemsPerPage,
-  onPageChange,
-  onItemsPerPageChange,
-}) => {
-  const startItem = (currentPage - 1) * itemsPerPage + 1;
-  const endItem = Math.min(currentPage * itemsPerPage, totalItems);
-
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxVisiblePages = 5;
-    
-    if (totalPages <= maxVisiblePages) {
-      for (let i = 1; i <= totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      if (currentPage <= 3) {
-        for (let i = 1; i <= 4; i++) {
-          pages.push(i);
-        }
-        pages.push('...');
-        pages.push(totalPages);
-      } else if (currentPage >= totalPages - 2) {
-        pages.push(1);
-        pages.push('...');
-        for (let i = totalPages - 3; i <= totalPages; i++) {
-          pages.push(i);
-        }
-      } else {
-        pages.push(1);
-        pages.push('...');
-        for (let i = currentPage - 1; i <= currentPage + 1; i++) {
-          pages.push(i);
-        }
-        pages.push('...');
-        pages.push(totalPages);
-      }
-    }
-    
-    return pages;
-  };
-
-  return (
-    <div className="flex items-center justify-between">
-      {/* Items info */}
-      <div className="text-sm text-gray-700 dark:text-gray-300">
-        Showing {startItem} to {endItem} of {totalItems} results
-      </div>
-
-      {/* Pagination controls */}
-      <div className="flex items-center space-x-2">
-        {/* Items per page selector */}
-        <div className="flex items-center space-x-2">
-          <label className="text-sm text-gray-700 dark:text-gray-300">
-            Show:
-          </label>
-          <select
-            value={itemsPerPage}
-            onChange={(e) => onItemsPerPageChange(Number(e.target.value))}
-            className="text-sm border border-gray-300 dark:border-gray-600 rounded px-2 py-1 bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
-          >
-            <option value={10}>10</option>
-            <option value={15}>15</option>
-            <option value={25}>25</option>
-            <option value={50}>50</option>
-          </select>
-        </div>
-
-        {/* Page navigation */}
-        <div className="flex items-center space-x-1">
-          {/* Previous button */}
-          <button
-            onClick={() => onPageChange(currentPage - 1)}
-            disabled={currentPage === 1}
-            className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Previous
-          </button>
-
-          {/* Page numbers */}
-          {getPageNumbers().map((page, index) => (
-            <button
-              key={index}
-              onClick={() => typeof page === 'number' && onPageChange(page)}
-              disabled={page === '...'}
-              className={`px-3 py-1 text-sm border rounded ${
-                page === currentPage
-                  ? 'bg-brand-500 text-white border-brand-500'
-                  : page === '...'
-                  ? 'border-gray-300 dark:border-gray-600 text-gray-500 dark:text-gray-400 cursor-default'
-                  : 'border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'
-              }`}
-            >
-              {page}
-            </button>
-          ))}
-
-          {/* Next button */}
-          <button
-            onClick={() => onPageChange(currentPage + 1)}
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            Next
-          </button>
-        </div>
-      </div>
     </div>
   );
 };

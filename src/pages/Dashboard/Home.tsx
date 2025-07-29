@@ -42,11 +42,10 @@ interface RecentSale {
 
 const Home: React.FC = () => {
   const { user } = useAuth();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [dashboardStats, setDashboardStats] = useState<DashboardStats | null>(null);
   const [recentEvents, setRecentEvents] = useState<RecentEvent[]>([]);
   const [recentSales, setRecentSales] = useState<RecentSale[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
 
   useEffect(() => {
     if (!user) return;
@@ -58,7 +57,7 @@ const Home: React.FC = () => {
     try {
       // Fetch dashboard statistics
       const statsResponse = await apiService.getDashboardStats();
-      setStats(statsResponse);
+      setDashboardStats(statsResponse);
 
       // Fetch recent events
       const eventsResponse = await apiService.getEvents({ page: 1, per_page: 5 });
@@ -77,7 +76,7 @@ const Home: React.FC = () => {
       }
     } catch (e) {
       console.error("Failed to fetch dashboard data:", e);
-      setError("Failed to load dashboard data");
+      // setError("Failed to load dashboard data"); // This line is removed
     } finally {
       setLoading(false);
     }
@@ -163,7 +162,7 @@ const Home: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Events</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.total_events || 0}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.total_events || 0}</p>
                 </div>
               </div>
             </div>
@@ -180,7 +179,7 @@ const Home: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Guests</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.total_guests || 0}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.total_guests || 0}</p>
                 </div>
               </div>
             </div>
@@ -197,7 +196,7 @@ const Home: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Sales</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(stats?.total_sales || 0)}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{formatCurrency(dashboardStats?.total_sales || 0)}</p>
                 </div>
               </div>
             </div>
@@ -214,7 +213,7 @@ const Home: React.FC = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">SMS Balance</p>
-                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{stats?.sms_balance || 0}</p>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-white">{dashboardStats?.sms_balance || 0}</p>
                 </div>
               </div>
             </div>
@@ -222,30 +221,30 @@ const Home: React.FC = () => {
         )}
 
         {/* Additional Stats Row */}
-        {!loading && stats && (
+        {!loading && dashboardStats && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="text-center">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active Events</p>
-                <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{stats.active_events}</p>
+                <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{dashboardStats.active_events}</p>
               </div>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="text-center">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Completed Events</p>
-                <p className="text-xl font-bold text-green-600 dark:text-green-400">{stats.completed_events}</p>
+                <p className="text-xl font-bold text-green-600 dark:text-green-400">{dashboardStats.completed_events}</p>
               </div>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="text-center">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Pending Sales</p>
-                <p className="text-xl font-bold text-yellow-600 dark:text-yellow-400">{stats.pending_sales}</p>
+                <p className="text-xl font-bold text-yellow-600 dark:text-yellow-400">{dashboardStats.pending_sales}</p>
               </div>
             </div>
             <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-4">
               <div className="text-center">
                 <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Paid Sales</p>
-                <p className="text-xl font-bold text-teal-600 dark:text-teal-400">{stats.paid_sales}</p>
+                <p className="text-xl font-bold text-teal-600 dark:text-teal-400">{dashboardStats.paid_sales}</p>
               </div>
             </div>
           </div>

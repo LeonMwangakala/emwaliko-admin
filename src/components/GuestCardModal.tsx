@@ -44,7 +44,6 @@ const GuestCardModal: React.FC<GuestCardModalProps> = ({
 }) => {
   const [cardType, setCardType] = useState<CardType | null>(null);
   const [cardDesignBase64, setCardDesignBase64] = useState<string>('');
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const imageRef = useRef<HTMLImageElement>(null);

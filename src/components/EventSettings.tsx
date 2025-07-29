@@ -77,7 +77,7 @@ const EventSettings: React.FC<EventSettingsProps> = ({ eventId, initialSettings,
     }));
   };
 
-  const handleDateChange = useCallback((selectedDates: Date[], dateStr: string, instance: any) => {
+  const handleDateChange = useCallback((selectedDates: Date[], dateStr: string) => {
     if (selectedDates.length > 0) {
       // Use the raw date string from flatpickr (already in YYYY-MM-DD format)
       setSettings(prev => ({

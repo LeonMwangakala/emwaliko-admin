@@ -33,7 +33,6 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
     country: null,
     type: null
   });
-  const [isFocused, setIsFocused] = useState(false);
   const [displayValue, setDisplayValue] = useState(value);
 
   // Validate phone number whenever value changes
@@ -67,7 +66,6 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
   };
 
   const handleBlur = () => {
-    setIsFocused(false);
     // Format the display value on blur if valid
     if (validation.isValid && validation.normalized) {
       const formatted = PhoneNumberValidator.formatForDisplay(validation.normalized);
@@ -131,7 +129,7 @@ const PhoneInput: React.FC<PhoneInputProps> = ({
           type="tel"
           value={displayValue}
           onChange={handleInputChange}
-          onFocus={() => setIsFocused(true)}
+          onFocus={() => {}} // Removed setIsFocused(true)
           onBlur={handleBlur}
           placeholder={placeholder}
           disabled={disabled}

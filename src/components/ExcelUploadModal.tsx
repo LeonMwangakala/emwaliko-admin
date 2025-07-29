@@ -239,7 +239,6 @@ const ExcelUploadModal: React.FC<ExcelUploadModalProps> = ({
         throw new Error(errorData.message || 'Upload failed');
       }
 
-      const result = await response.json();
       onSuccess();
       onClose();
       setShowValidationModal(false);

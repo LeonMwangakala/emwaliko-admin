@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { useNavigate } from "react-router";
 import NotAuthorized from "../OtherPage/NotAuthorized";
 import { apiService } from "../../services/api";
 import PageMeta from "../../components/common/PageMeta";
@@ -21,7 +20,6 @@ interface Customer {
 
 const Customers: React.FC = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -298,7 +296,7 @@ const Customers: React.FC = () => {
                 <PhoneInput
                   value={newPhoneNumber}
                   onChange={(val) => setNewPhoneNumber(val)}
-                  onValidationChange={(isValid, validation) => setPhoneValidation(validation)}
+                  onValidationChange={(_, validation) => setPhoneValidation(validation)}
                   placeholder="Phone Number"
                   required
                   label="Phone Number *"
@@ -354,7 +352,7 @@ const Customers: React.FC = () => {
                 <PhoneInput
                   value={newPhoneNumber}
                   onChange={(val) => setNewPhoneNumber(val)}
-                  onValidationChange={(isValid, validation) => setPhoneValidation(validation)}
+                  onValidationChange={(_, validation) => setPhoneValidation(validation)}
                   placeholder="Phone Number"
                   required
                   label="Phone Number *"

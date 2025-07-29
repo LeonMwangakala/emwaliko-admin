@@ -203,7 +203,7 @@ const Reports: React.FC = () => {
           summaryRows.push(row);
         }
         
-        summaryRows.forEach((row, index) => {
+        summaryRows.forEach((row) => {
           const excelRow = worksheet.addRow(row);
           excelRow.height = 25;
           excelRow.getCell(1).font = { bold: true, size: 11 };
@@ -391,7 +391,7 @@ const Reports: React.FC = () => {
         const summaryColWidths = [60, 40, 60, 40];
         let summaryX = margin;
         
-        summaryRows.forEach((row, index) => {
+        summaryRows.forEach((row) => {
           if (yPosition > 250) {
             doc.addPage();
             yPosition = 20;
@@ -446,9 +446,9 @@ const Reports: React.FC = () => {
       doc.setFontSize(10);
       doc.setTextColor(255, 255, 255);
       doc.setFont('helvetica', 'bold');
-      headers.forEach((header, index) => {
+      headers.forEach((header) => {
         doc.text(String(header || ''), headerX + 2, yPosition);
-        headerX += colWidths[index];
+        headerX += colWidths[headers.indexOf(header)];
       });
       
       yPosition += 10;

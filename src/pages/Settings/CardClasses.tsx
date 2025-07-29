@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { useNavigate } from "react-router";
 import NotAuthorized from "../OtherPage/NotAuthorized";
 import { apiService } from "../../services/api";
 import PageMeta from "../../components/common/PageMeta";
@@ -17,7 +16,6 @@ interface CardClass {
 
 const CardClasses: React.FC = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   const [cardClasses, setCardClasses] = useState<CardClass[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);

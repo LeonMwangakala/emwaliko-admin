@@ -1,56 +1,26 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useContext, useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation } from "react-router";
+import { SidebarContext } from "../context/SidebarContext";
+import { useAuth } from "../context/AuthContext";
+import { NavItem } from "../types/navigation";
 import {
   GridIcon,
   UserIcon,
   CalenderIcon,
-  UserCircleIcon,
+  DollarLineIcon,
+  PageIcon,
   PieChartIcon,
   PlugInIcon,
-  PageIcon,
+  UserCircleIcon,
   BoxIcon,
   BoxCubeIcon,
   BoxIconLine,
   ChevronDownIcon,
   HorizontaLDots,
-  DollarLineIcon,
 } from "../icons";
-import { useSidebar } from "../context/SidebarContext";
-import SidebarWidget from "./SidebarWidget";
-import { useAuth } from "../context/AuthContext";
-
-// Type definitions
-interface NavItem {
-  icon: React.ReactNode;
-  name: string;
-  path?: string;
-  subItems?: Array<{
-    name: string;
-    path: string;
-    icon?: React.ReactNode;
-    pro?: boolean;
-    new?: boolean;
-  }>;
-}
-
-type MenuItem = NavItem | {
-  icon: React.ReactNode;
-  name: string;
-  path: string;
-} | {
-  icon: React.ReactNode;
-  name: string;
-  subItems: Array<{
-    name: string;
-    path: string;
-    icon?: React.ReactNode;
-    pro?: boolean;
-    new?: boolean;
-  }>;
-};
 
 // Menu config for admin users
-const adminNavItems = [
+const adminNavItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
@@ -112,7 +82,7 @@ const adminNavItems = [
 ];
 
 // Menu config for normal users
-const userNavItems = [
+const userNavItems: NavItem[] = [
   {
     icon: <GridIcon />,
     name: "Dashboard",
@@ -162,7 +132,7 @@ const othersItems: NavItem[] = [
 ];
 
 const AppSidebar: React.FC = () => {
-  const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
+  const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useContext(SidebarContext);
   const location = useLocation();
   const { user } = useAuth();
 

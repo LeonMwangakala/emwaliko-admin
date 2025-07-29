@@ -31,7 +31,6 @@ interface Event {
 interface EventsTableProps {
   events: Event[];
   onEdit?: (event: Event) => void;
-  onDelete?: (event: Event) => void;
   onView?: (event: Event) => void;
 }
 
