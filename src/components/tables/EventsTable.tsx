@@ -37,7 +37,6 @@ interface EventsTableProps {
 const EventsTable: React.FC<EventsTableProps> = ({ 
   events, 
   onEdit, 
-  onDelete, 
   onView 
 }) => {
   const formatDate = (dateString: string) => {

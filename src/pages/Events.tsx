@@ -15,9 +15,9 @@ interface Event {
   title?: string; // Keep for backward compatibility
   description?: string;
   event_date: string;
-  event_time: string;
   event_location?: string;
   location?: string; // Keep for backward compatibility
+  notification_date?: string;
   status: "initiated" | "inprogress" | "notified" | "scanned" | "completed" | "cancelled";
   event_type?: {
     id: number;
@@ -47,6 +47,8 @@ const Events: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<Event | null>(null);
   const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   
@@ -107,6 +109,13 @@ const Events: React.FC = () => {
       fetchDropdownOptions();
     }
   }, [showCreateModal]);
+
+  // Fetch dropdown options when edit modal opens
+  useEffect(() => {
+    if (showEditModal) {
+      fetchDropdownOptions();
+    }
+  }, [showEditModal]);
 
   const fetchDropdownOptions = async () => {
     setLoadingOptions(true);
@@ -178,31 +187,32 @@ const Events: React.FC = () => {
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoading(true);
     setError("");
-    
-    console.log('Form data being submitted:', formData);
-    
+
     try {
+      // Merge date and time into a single datetime string
+      const eventDateTime = `${formData.event_date}T${formData.event_time}:00`;
+      
       const eventData = {
-        title: formData.title,
-        event_date: formData.event_date,
-        event_time: formData.event_time,
-        location: formData.location || undefined,
-        event_type_id: formData.event_type_id ? parseInt(formData.event_type_id) : undefined,
-        customer_id: formData.customer_id ? parseInt(formData.customer_id) : undefined,
-        card_type_id: formData.card_type_id ? parseInt(formData.card_type_id) : undefined,
-        package_id: formData.package_id ? parseInt(formData.package_id) : undefined,
-        notification_date: formData.notification_date || undefined,
-        notification_time: formData.notification_time || undefined,
-        country_id: formData.country_id ? parseInt(formData.country_id) : undefined,
-        region_id: formData.region_id ? parseInt(formData.region_id) : undefined,
-        district_id: formData.district_id ? parseInt(formData.district_id) : undefined,
+        event_name: formData.title,
+        event_date: eventDateTime,
+        event_location: formData.location,
+        event_type_id: formData.event_type_id || null,
+        customer_id: formData.customer_id || null,
+        card_type_id: formData.card_type_id || null,
+        package_id: formData.package_id || null,
+        notification_date: formData.notification_date && formData.notification_time 
+          ? `${formData.notification_date}T${formData.notification_time}:00` 
+          : null,
+        country_id: formData.country_id || null,
+        region_id: formData.region_id || null,
+        district_id: formData.district_id || null,
       };
-      
-      console.log('Event data to be sent:', eventData);
-      
+
       await apiService.createEvent(eventData);
-      setShowCreateModal(false);
+      
+      // Reset form
       setFormData({
         title: "",
         event_date: "",
@@ -218,10 +228,74 @@ const Events: React.FC = () => {
         region_id: "",
         district_id: "",
       });
-      fetchEvents();
-    } catch (e) {
-      console.error('Failed to create event:', e);
-      setError("Failed to create event");
+      
+      setShowCreateModal(false);
+      fetchEvents(); // Refresh the events list
+    } catch (err: any) {
+      setError(err.message || "Failed to create event");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingEvent) return;
+    
+    console.log('Update form submitted');
+    console.log('Editing event:', editingEvent);
+    console.log('Form data:', formData);
+
+    try {
+      // Merge date and time into a single datetime string
+      const eventDateTime = `${formData.event_date}T${formData.event_time}:00`;
+      
+      const eventData = {
+        event_name: formData.title,
+        event_date: eventDateTime,
+        event_location: formData.location,
+        event_type_id: formData.event_type_id || null,
+        customer_id: formData.customer_id || null,
+        card_type_id: formData.card_type_id || null,
+        package_id: formData.package_id || null,
+        notification_date: formData.notification_date && formData.notification_time 
+          ? `${formData.notification_date}T${formData.notification_time}:00` 
+          : null,
+        country_id: formData.country_id || null,
+        region_id: formData.region_id || null,
+        district_id: formData.district_id || null,
+      };
+
+      console.log('Sending update request with data:', eventData);
+      console.log('Event ID:', editingEvent.id);
+
+      const response = await apiService.updateEvent(editingEvent.id, eventData);
+      console.log('Update successful:', response);
+      
+      // Reset form and close modal
+      setFormData({
+        title: "",
+        event_date: "",
+        event_time: "",
+        location: "",
+        event_type_id: "",
+        customer_id: "",
+        card_type_id: "",
+        package_id: "",
+        notification_date: "",
+        notification_time: "",
+        country_id: "",
+        region_id: "",
+        district_id: "",
+      });
+      
+      setShowEditModal(false);
+      setEditingEvent(null);
+      fetchEvents(); // Refresh the events list
+      console.log('Modal closed and events refreshed');
+    } catch (err: any) {
+      console.error('Update failed:', err);
+      setError(err.message || "Failed to update event");
     }
   };
 
@@ -300,10 +374,38 @@ const Events: React.FC = () => {
     navigate(`/events/${eventItem.id}`);
   };
 
-  const handleEditEvent = (eventItem: any) => {
-    // TODO: Implement edit event functionality
-    console.log('Edit event:', eventItem);
-    // You can navigate to an edit page or show an edit modal
+  const handleEditEvent = (eventItem: Event) => {
+    console.log('Edit event clicked:', eventItem);
+    setEditingEvent(eventItem);
+    
+    // Parse the event date and time
+    const eventDate = eventItem.event_date ? eventItem.event_date.split('T')[0] : '';
+    const eventTime = eventItem.event_date ? eventItem.event_date.split('T')[1]?.substring(0, 5) || '' : '';
+    
+    // Parse notification date and time
+    const notificationDate = eventItem.notification_date ? eventItem.notification_date.split('T')[0] : '';
+    const notificationTime = eventItem.notification_date ? eventItem.notification_date.split('T')[1]?.substring(0, 5) || '' : '';
+    
+    // Pre-fill the form with event data
+    const formDataToSet = {
+      title: eventItem.event_name || eventItem.title || "",
+      event_date: eventDate,
+      event_time: eventTime,
+      location: eventItem.event_location || eventItem.location || "",
+      event_type_id: eventItem.event_type?.id?.toString() || "",
+      customer_id: eventItem.customer?.id?.toString() || "",
+      card_type_id: "",
+      package_id: eventItem.package?.id?.toString() || "",
+      notification_date: notificationDate,
+      notification_time: notificationTime,
+      country_id: "",
+      region_id: "",
+      district_id: "",
+    };
+    
+    console.log('Setting form data:', formDataToSet);
+    setFormData(formDataToSet);
+    setShowEditModal(true);
   };
 
   if (!user) return null;
@@ -732,6 +834,308 @@ const Events: React.FC = () => {
                   className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600"
                 >
                   Create Event
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Event Modal */}
+      {showEditModal && editingEvent && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-[999999]">
+          <div className="bg-white dark:bg-gray-900 p-6 rounded-lg shadow-xl w-full max-w-6xl max-h-[90vh] overflow-y-auto mx-4">
+            <div className="flex justify-between items-center mb-6">
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Edit Event</h3>
+              <button
+                onClick={() => {
+                  setShowEditModal(false);
+                  setEditingEvent(null);
+                }}
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            
+            {error && <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">{error}</div>}
+            
+            {loadingOptions && (
+              <div className="mb-4 p-3 bg-blue-100 border border-blue-400 text-blue-700 rounded">
+                Loading options...
+              </div>
+            )}
+            
+            <form onSubmit={handleUpdate} className="space-y-6">
+              {/* Event Details Section */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                  Event Details
+                </h4>
+                
+                {/* Event Name - Full Width */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Event Name *
+                  </label>
+                  <input
+                    type="text"
+                    required
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                    placeholder="Enter event name"
+                  />
+                </div>
+                
+                {/* Event Date, Time, Location - 3 columns */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <DatePicker
+                      id="edit-event-date"
+                      label="Event Date *"
+                      placeholder="Select event date"
+                      defaultDate={formData.event_date ? new Date(formData.event_date) : undefined}
+                      onChange={(_, dateStr) => {
+                        setFormData({ ...formData, event_date: dateStr });
+                      }}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Event Time * (24-hour format)
+                    </label>
+                    <input
+                      type="time"
+                      required
+                      value={formData.event_time}
+                      onChange={(e) => setFormData({ ...formData, event_time: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Event Location
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.location}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                      placeholder="Enter event location"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Event Configuration Section */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                  Event Configuration
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Event Type
+                    </label>
+                    <select
+                      value={formData.event_type_id}
+                      onChange={(e) => setFormData({ ...formData, event_type_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                      disabled={loadingOptions}
+                    >
+                      <option value="">Select Event Type</option>
+                      {eventTypes.map((type) => (
+                        <option key={type.id} value={type.id}>
+                          {type.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Customer
+                    </label>
+                    <select
+                      value={formData.customer_id}
+                      onChange={(e) => setFormData({ ...formData, customer_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                      disabled={loadingOptions}
+                    >
+                      <option value="">Select Customer</option>
+                      {customers.map((customer) => (
+                        <option key={customer.id} value={customer.id}>
+                          {customer.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Card Type
+                    </label>
+                    <select
+                      value={formData.card_type_id}
+                      onChange={(e) => setFormData({ ...formData, card_type_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                      disabled={loadingOptions}
+                    >
+                      <option value="">Select Card Type</option>
+                      {cardTypes.map((type) => (
+                        <option key={type.id} value={type.id}>
+                          {type.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Package
+                    </label>
+                    <select
+                      value={formData.package_id}
+                      onChange={(e) => setFormData({ ...formData, package_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                      disabled={loadingOptions}
+                    >
+                      <option value="">Select Package</option>
+                      {packages.map((pkg) => (
+                        <option key={pkg.id} value={pkg.id}>
+                          {pkg.name} ({pkg.amount} {pkg.currency})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Location Details Section */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                  Location Details
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Country
+                    </label>
+                    <select
+                      value={formData.country_id}
+                      onChange={(e) => handleCountryChange(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                      disabled={loadingOptions}
+                    >
+                      <option value="">Select Country</option>
+                      {countries.map((country) => (
+                        <option key={country.id} value={country.id}>
+                          {country.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Region
+                    </label>
+                    <select
+                      value={formData.region_id}
+                      onChange={(e) => handleRegionChange(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                      disabled={!formData.country_id || loadingOptions || loadingRegions}
+                    >
+                      <option value="">
+                        {loadingRegions ? 'Loading regions...' : 'Select Region'}
+                      </option>
+                      {regions.map((region) => (
+                        <option key={region.id} value={region.id}>
+                          {region.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      District
+                    </label>
+                    <select
+                      value={formData.district_id}
+                      onChange={(e) => setFormData({ ...formData, district_id: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                      disabled={!formData.region_id || loadingOptions || loadingDistricts}
+                    >
+                      <option value="">
+                        {loadingDistricts ? 'Loading districts...' : 'Select District'}
+                      </option>
+                      {districts.map((district) => (
+                        <option key={district.id} value={district.id}>
+                          {district.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Schedules Section */}
+              <div className="space-y-4">
+                <h4 className="text-lg font-semibold text-gray-900 dark:text-white border-b border-gray-200 dark:border-gray-700 pb-2">
+                  Schedules
+                </h4>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <DatePicker
+                      id="edit-notification-date"
+                      label="Notification Date"
+                      placeholder="Select notification date"
+                      defaultDate={formData.notification_date ? new Date(formData.notification_date) : undefined}
+                      onChange={(_, dateStr) => {
+                        setFormData({ ...formData, notification_date: dateStr });
+                      }}
+                    />
+                  </div>
+                  
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Notification Time (24-hour format)
+                    </label>
+                    <input
+                      type="time"
+                      value={formData.notification_time}
+                      onChange={(e) => setFormData({ ...formData, notification_time: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                    />
+                  </div>
+                </div>
+              </div>
+              
+              <div className="flex justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowEditModal(false);
+                    setEditingEvent(null);
+                  }}
+                  className="px-4 py-2 text-gray-700 bg-gray-200 rounded-md hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600"
+                >
+                  Update Event
                 </button>
               </div>
             </form>

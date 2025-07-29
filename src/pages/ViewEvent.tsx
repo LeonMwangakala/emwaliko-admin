@@ -155,24 +155,17 @@ const ViewEvent: React.FC = () => {
   const [notificationsSearchTerm, setNotificationsSearchTerm] = useState("");
 
   useEffect(() => {
-    console.log('Initial useEffect triggered:', { user: !!user, id });
     if (!user || !id) {
-      console.log('Missing user or id, returning early');
       return;
     }
-    console.log('Calling fetchEvent from initial useEffect');
     fetchEvent();
   }, [user, id]);
 
   const fetchEvent = async () => {
-    console.log('fetchEvent called with id:', id);
     setLoading(true);
     try {
-      const res = await apiService.getEvent(parseInt(id!));
-      console.log('Event loaded:', res);
-      console.log('Event type:', typeof res);
-      console.log('Event keys:', res ? Object.keys(res) : 'null');
-      setEvent(res as Event);
+      const res = await apiService.getEvent(parseInt(id!)) as Event;
+      setEvent(res);
     } catch (e) {
       console.error('Error fetching event:', e);
       setError("Failed to fetch event");
@@ -182,9 +175,7 @@ const ViewEvent: React.FC = () => {
   };
 
   const fetchTabData = useCallback(async () => {
-    console.log('fetchTabData called with:', { event: event?.id, activeTab });
     if (!event) {
-      console.log('No event, returning early');
       return;
     }
     
@@ -192,9 +183,7 @@ const ViewEvent: React.FC = () => {
     try {
       switch (activeTab) {
         case "guests":
-          console.log('Fetching guests...');
           const guestsRes = await apiService.getEventGuests(event.id, currentPage, itemsPerPage, searchTerm);
-          console.log('Guests response:', guestsRes);
           
           // Handle paginated response
           if (guestsRes && typeof guestsRes === 'object' && 'data' in guestsRes) {
@@ -209,9 +198,7 @@ const ViewEvent: React.FC = () => {
           }
           break;
         case "notifications":
-          console.log('Fetching notifications...');
           const notificationsRes = await apiService.getEventNotifications(event.id, notificationsCurrentPage, notificationsItemsPerPage, notificationsSearchTerm);
-          console.log('Notifications response:', notificationsRes);
           if (notificationsRes && typeof notificationsRes === 'object' && 'data' in notificationsRes) {
             setNotifications((notificationsRes as any).data);
             setNotificationsTotalItems((notificationsRes as any).total || 0);
@@ -223,9 +210,7 @@ const ViewEvent: React.FC = () => {
           }
           break;
         case "scan":
-          console.log('Fetching scans...');
           const scansRes = await apiService.getEventScans(event.id);
-          console.log('Scans response:', scansRes);
           setScans((scansRes as any).data || scansRes);
           break;
       }
@@ -237,12 +222,9 @@ const ViewEvent: React.FC = () => {
   }, [event, activeTab, currentPage, itemsPerPage, searchTerm, notificationsCurrentPage, notificationsItemsPerPage, notificationsSearchTerm]);
 
   useEffect(() => {
-    console.log('useEffect triggered:', { event: event?.id, activeTab });
     if (!event) {
-      console.log('No event in useEffect, returning early');
       return;
     }
-    console.log('Calling fetchTabData from useEffect');
     fetchTabData();
   }, [fetchTabData]);
 
@@ -559,7 +541,6 @@ const ViewEvent: React.FC = () => {
               <button
                 key={tab.key}
                 onClick={() => {
-                  console.log('Tab clicked:', tab.key);
                   setActiveTab(tab.key);
                   // Reset pagination when switching to guests tab
                   if (tab.key === 'guests') {
