@@ -15,13 +15,13 @@ const getEnvVar = (key: string, defaultValue: string): string => {
 const environments: Record<string, EnvironmentConfig> = {
   development: {
     API_BASE_URL: getEnvVar('VITE_API_BASE_URL', 'http://localhost:8000/api'),
-    APP_NAME: 'KadiRafiki Admin',
+    APP_NAME: 'KadiRafiki Admin (Dev)',
     APP_VERSION: '1.0.0',
     DEBUG: true,
   },
   staging: {
     API_BASE_URL: getEnvVar('VITE_API_BASE_URL', 'https://staging-api.kadirafiki.com/api'),
-    APP_NAME: 'KadiRafiki Admin',
+    APP_NAME: 'KadiRafiki Admin (Staging)',
     APP_VERSION: '1.0.0',
     DEBUG: true,
   },
@@ -44,4 +44,10 @@ export const ENV_CONFIG: EnvironmentConfig = environments[getCurrentEnvironment(
 // Export environment helper
 export const isDevelopment = (): boolean => getCurrentEnvironment() === 'development';
 export const isProduction = (): boolean => getCurrentEnvironment() === 'production';
-export const isStaging = (): boolean => getCurrentEnvironment() === 'staging'; 
+export const isStaging = (): boolean => getCurrentEnvironment() === 'staging';
+
+// Log current environment (only in development)
+if (isDevelopment()) {
+  console.log('🌍 Environment:', getCurrentEnvironment());
+  console.log('🔗 API Base URL:', ENV_CONFIG.API_BASE_URL);
+} 

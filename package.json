@@ -5,9 +5,18 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "dev:local": "vite --mode development",
+    "dev:staging": "vite --mode staging",
+    "dev:prod": "vite --mode production",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "build:dev": "tsc -b && vite build --mode development",
+    "build:staging": "tsc -b && vite build --mode staging",
+    "build:prod": "tsc -b && vite build --mode production",
+    "preview": "vite preview",
+    "preview:dev": "vite preview --mode development",
+    "preview:staging": "vite preview --mode staging",
+    "preview:prod": "vite preview --mode production",
+    "lint": "eslint ."
   },
   "dependencies": {
     "@fullcalendar/core": "^6.1.15",
