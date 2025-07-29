@@ -56,7 +56,9 @@ const Home: React.FC = () => {
     setLoading(true);
     try {
       // Fetch dashboard statistics
+      console.log('Fetching dashboard stats...');
       const statsResponse = await apiService.getDashboardStats();
+      console.log('Dashboard stats response:', statsResponse);
       setDashboardStats(statsResponse);
 
       // Fetch recent events
