@@ -293,21 +293,57 @@ const SendNotificationsModal: React.FC<SendNotificationsModalProps> = ({
 
           {/* Template Buttons */}
           {event?.event_type && (
-            <div className="flex space-x-2 mb-4">
-              <button
-                type="button"
-                onClick={() => loadTemplate('SMS')}
-                className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
-              >
-                Load SMS Template
-              </button>
-              <button
-                type="button"
-                onClick={() => loadTemplate('WhatsApp')}
-                className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
-              >
-                Load WhatsApp Template
-              </button>
+            <div className="grid grid-cols-2 gap-2 mb-4">
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">SMS Templates</h4>
+                <div className="flex space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTemplateType('invitation');
+                      loadTemplate('SMS');
+                    }}
+                    className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                  >
+                    Invitation SMS
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTemplateType('donation');
+                      loadTemplate('SMS');
+                    }}
+                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                  >
+                    Donation SMS
+                  </button>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300">WhatsApp Templates</h4>
+                <div className="flex space-x-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTemplateType('invitation');
+                      loadTemplate('WhatsApp');
+                    }}
+                    className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
+                  >
+                    Invitation WhatsApp
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setTemplateType('donation');
+                      loadTemplate('WhatsApp');
+                    }}
+                    className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
+                  >
+                    Donation WhatsApp
+                  </button>
+                </div>
+              </div>
             </div>
           )}
 
@@ -330,6 +366,14 @@ const SendNotificationsModal: React.FC<SendNotificationsModalProps> = ({
                 <span>, {'{mpesa_number}'}, {'{airtel_number}'}</span>
               )}
             </p>
+            {notificationType === 'WhatsApp' && (
+              <div className="mt-2 p-2 bg-green-50 border border-green-200 rounded-md dark:bg-green-900/20 dark:border-green-800">
+                <p className="text-xs text-green-700 dark:text-green-300">
+                  💬 <strong>WhatsApp Integration:</strong> Guests can reply with "YES", "NO", or "MAYBE" to RSVP directly through WhatsApp. 
+                  Responses will be automatically captured and updated in the system.
+                </p>
+              </div>
+            )}
             
             {/* Preview Section */}
             {message && availableGuests.length > 0 && (
