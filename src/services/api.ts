@@ -174,6 +174,12 @@ class ApiService {
     });
   }
 
+  async regenerateAllQrCodes(eventId: number) {
+    return this.request(`/events/${eventId}/guests/regenerate-qr-codes`, {
+      method: 'POST',
+    });
+  }
+
   async regenerateGuestQrCode(guestId: number) {
     return this.request(`/guests/${guestId}/regenerate-qr-code`, {
       method: 'POST',

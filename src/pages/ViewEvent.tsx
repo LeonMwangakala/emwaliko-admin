@@ -12,6 +12,7 @@ import CardDesign from "../components/CardDesign";
 import EventSettings from "../components/EventSettings";
 import ScanModal from "../components/ScanModal";
 import GuestCardModal from "../components/GuestCardModal";
+import RegenerateQrCodesModal from "../components/RegenerateQrCodesModal";
 import GuestsTable from "../components/tables/GuestsTable";
 import Pagination from "../components/common/Pagination";
 
@@ -139,6 +140,7 @@ const ViewEvent: React.FC = () => {
   const [editingGuest, setEditingGuest] = useState<Guest | null>(null);
   const [showGuestCardModal, setShowGuestCardModal] = useState(false);
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
+  const [showRegenerateQrCodesModal, setShowRegenerateQrCodesModal] = useState(false);
   
   // Pagination state for guests
   const [currentPage, setCurrentPage] = useState(1);
@@ -341,19 +343,15 @@ const ViewEvent: React.FC = () => {
     }
   };
 
-  const handleGenerateMissingQrCodes = async () => {
-    if (!event) return;
-    try {
-      await apiService.generateMissingQrCodes(event.id);
-      setUploadSuccess("Missing QR codes generated successfully!");
-      setError("");
-      fetchTabData();
-      setTimeout(() => setUploadSuccess(""), 3000);
-    } catch (e: any) {
-      console.error("Error generating missing QR codes:", e);
-      setError("Failed to generate missing QR codes");
-      setUploadSuccess("");
-    }
+  const handleRegenerateQrCodes = () => {
+    setShowRegenerateQrCodesModal(true);
+  };
+
+  const handleRegenerateQrCodesSuccess = () => {
+    setUploadSuccess("QR codes regenerated successfully!");
+    setError("");
+    fetchTabData();
+    setTimeout(() => setUploadSuccess(""), 3000);
   };
 
   const handleScanSuccess = () => {
@@ -588,10 +586,10 @@ const ViewEvent: React.FC = () => {
                   Upload Excel
                 </button>
                 <button 
-                  onClick={handleGenerateMissingQrCodes}
+                  onClick={handleRegenerateQrCodes}
                   className="px-3 py-1 text-sm bg-purple-600 text-white rounded hover:bg-purple-700 transition-colors"
                 >
-                  Generate QR Codes
+                  Regenerate QR Codes
                 </button>
               </div>
             ) : activeTab === "notifications" && event ? (
@@ -955,6 +953,18 @@ const ViewEvent: React.FC = () => {
           eventId={event.id}
           cardTypeId={event.card_type?.id || 1}
           cardDesignPath={event.card_design_path}
+        />
+      )}
+      
+      {/* Regenerate QR Codes Modal */}
+      {event && (
+        <RegenerateQrCodesModal
+          isOpen={showRegenerateQrCodesModal}
+          onClose={() => setShowRegenerateQrCodesModal(false)}
+          onSuccess={handleRegenerateQrCodesSuccess}
+          eventId={event.id}
+          eventName={event.event_name}
+          totalGuests={totalItems}
         />
       )}
     </>
