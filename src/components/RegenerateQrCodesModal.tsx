@@ -36,7 +36,7 @@ const RegenerateQrCodesModal: React.FC<RegenerateQrCodesModalProps> = ({
       const progressInterval = setInterval(() => {
         setProgress(prev => {
           if (prev >= 90) {
-            clearInterval(progressInterval);
+            // clearInterval(progressInterval);
             return prev;
           }
           return prev + 10;
@@ -45,7 +45,7 @@ const RegenerateQrCodesModal: React.FC<RegenerateQrCodesModalProps> = ({
 
       const response = await apiService.regenerateAllQrCodes(eventId);
       
-      clearInterval(progressInterval);
+      // clearInterval(progressInterval);
       setProgress(100);
       setCurrentStep('QR codes regenerated successfully!');
       setResult(response);
@@ -62,7 +62,7 @@ const RegenerateQrCodesModal: React.FC<RegenerateQrCodesModalProps> = ({
       }, 2000);
 
     } catch (err: any) {
-      clearInterval(progressInterval);
+      // clearInterval(progressInterval);
       setError(err.message || 'Failed to regenerate QR codes');
       setIsLoading(false);
       setProgress(0);
