@@ -191,20 +191,17 @@ const Events: React.FC = () => {
     setError("");
 
     try {
-      // Merge date and time into a single datetime string
-      const eventDateTime = `${formData.event_date}T${formData.event_time}:00`;
-      
       const eventData = {
         event_name: formData.title,
-        event_date: eventDateTime,
+        event_date: formData.event_date,
+        event_time: formData.event_time,
         event_location: formData.location,
         event_type_id: formData.event_type_id || null,
         customer_id: formData.customer_id || null,
         card_type_id: formData.card_type_id || null,
         package_id: formData.package_id || null,
-        notification_date: formData.notification_date && formData.notification_time 
-          ? `${formData.notification_date}T${formData.notification_time}:00` 
-          : null,
+        notification_date: formData.notification_date || null,
+        notification_time: formData.notification_time || null,
         country_id: formData.country_id || null,
         region_id: formData.region_id || null,
         district_id: formData.district_id || null,
@@ -247,20 +244,17 @@ const Events: React.FC = () => {
     console.log('Form data:', formData);
 
     try {
-      // Merge date and time into a single datetime string
-      const eventDateTime = `${formData.event_date}T${formData.event_time}:00`;
-      
       const eventData = {
         event_name: formData.title,
-        event_date: eventDateTime,
+        event_date: formData.event_date,
+        event_time: formData.event_time,
         event_location: formData.location,
         event_type_id: formData.event_type_id || null,
         customer_id: formData.customer_id || null,
         card_type_id: formData.card_type_id || null,
         package_id: formData.package_id || null,
-        notification_date: formData.notification_date && formData.notification_time 
-          ? `${formData.notification_date}T${formData.notification_time}:00` 
-          : null,
+        notification_date: formData.notification_date || null,
+        notification_time: formData.notification_time || null,
         country_id: formData.country_id || null,
         region_id: formData.region_id || null,
         district_id: formData.district_id || null,

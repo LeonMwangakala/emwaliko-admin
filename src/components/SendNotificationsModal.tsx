@@ -300,22 +300,12 @@ const SendNotificationsModal: React.FC<SendNotificationsModalProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      setTemplateType('invitation');
+                      setTemplateType(event.card_type?.name === 'Donation' ? 'donation' : 'invitation');
                       loadTemplate('SMS');
                     }}
                     className="px-3 py-1 text-sm bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
                   >
-                    Invitation SMS
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setTemplateType('donation');
-                      loadTemplate('SMS');
-                    }}
-                    className="px-3 py-1 text-sm bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                  >
-                    Donation SMS
+                    {event.card_type?.name === 'Donation' ? 'Donation SMS' : 'Invitation SMS'}
                   </button>
                 </div>
               </div>
@@ -325,22 +315,12 @@ const SendNotificationsModal: React.FC<SendNotificationsModalProps> = ({
                   <button
                     type="button"
                     onClick={() => {
-                      setTemplateType('invitation');
+                      setTemplateType(event.card_type?.name === 'Donation' ? 'donation' : 'invitation');
                       loadTemplate('WhatsApp');
                     }}
                     className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 transition-colors"
                   >
-                    Invitation WhatsApp
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setTemplateType('donation');
-                      loadTemplate('WhatsApp');
-                    }}
-                    className="px-3 py-1 text-sm bg-green-600 text-white rounded hover:bg-green-700 transition-colors"
-                  >
-                    Donation WhatsApp
+                    {event.card_type?.name === 'Donation' ? 'Donation WhatsApp' : 'Invitation WhatsApp'}
                   </button>
                 </div>
               </div>
