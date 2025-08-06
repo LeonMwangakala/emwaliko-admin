@@ -66,7 +66,13 @@ class ApiService {
       
       if (!response.ok) {
         const errorData: ApiError = await response.json();
-        throw new Error(errorData.message || 'API request failed');
+        
+        // Create a more detailed error object for better handling
+        const detailedError = new Error(errorData.message || 'API request failed');
+        (detailedError as any).errors = errorData.errors;
+        (detailedError as any).status = response.status;
+        
+        throw detailedError;
       }
 
       return await response.json();
