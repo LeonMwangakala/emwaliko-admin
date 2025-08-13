@@ -1189,7 +1189,6 @@ const Events: React.FC = () => {
                   />
                 </div>
               </div>
-            </div>
 
               {/* Schedules Section */}
               <div className="space-y-4">
