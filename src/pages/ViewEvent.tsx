@@ -21,6 +21,9 @@ interface Event {
   event_name: string;
   event_date: string;
   event_location?: string;
+  latitude?: number;
+  longitude?: number;
+  google_maps_url?: string;
   status: "initiated" | "inprogress" | "notified" | "scanned" | "completed" | "cancelled";
   customer?: {
     id: number;
@@ -504,6 +507,31 @@ const ViewEvent: React.FC = () => {
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">District</label>
                     <p className="mt-1 text-sm text-gray-900 dark:text-white">{event.district?.name || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Latitude</label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-white">{event.latitude || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Longitude</label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-white">{event.longitude || 'Not specified'}</p>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Google Maps URL</label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                      {event.google_maps_url ? (
+                        <a 
+                          href={event.google_maps_url} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-brand-600 hover:text-brand-800 dark:text-brand-400 dark:hover:text-brand-300 underline"
+                        >
+                          View on Google Maps
+                        </a>
+                      ) : (
+                        'Not specified'
+                      )}
+                    </p>
                   </div>
                 </div>
               </div>
