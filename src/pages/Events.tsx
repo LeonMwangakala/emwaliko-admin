@@ -17,6 +17,9 @@ interface Event {
   event_date: string;
   event_location?: string;
   location?: string; // Keep for backward compatibility
+  latitude?: number;
+  longitude?: number;
+  google_maps_url?: string;
   notification_date?: string;
   status: "initiated" | "inprogress" | "notified" | "scanned" | "completed" | "cancelled";
   event_type?: {
@@ -64,6 +67,9 @@ const Events: React.FC = () => {
     event_date: "",
     event_time: "",
     location: "",
+    latitude: "",
+    longitude: "",
+    google_maps_url: "",
     event_type_id: "",
     customer_id: "",
     card_type_id: "",
@@ -196,6 +202,9 @@ const Events: React.FC = () => {
         event_date: formData.event_date,
         event_time: formData.event_time,
         event_location: formData.location,
+        latitude: formData.latitude || null,
+        longitude: formData.longitude || null,
+        google_maps_url: formData.google_maps_url || null,
         event_type_id: formData.event_type_id || null,
         customer_id: formData.customer_id || null,
         card_type_id: formData.card_type_id || null,
@@ -215,6 +224,9 @@ const Events: React.FC = () => {
         event_date: "",
         event_time: "",
         location: "",
+        latitude: "",
+        longitude: "",
+        google_maps_url: "",
         event_type_id: "",
         customer_id: "",
         card_type_id: "",
@@ -249,6 +261,9 @@ const Events: React.FC = () => {
         event_date: formData.event_date,
         event_time: formData.event_time,
         event_location: formData.location,
+        latitude: formData.latitude || null,
+        longitude: formData.longitude || null,
+        google_maps_url: formData.google_maps_url || null,
         event_type_id: formData.event_type_id || null,
         customer_id: formData.customer_id || null,
         card_type_id: formData.card_type_id || null,
@@ -272,6 +287,9 @@ const Events: React.FC = () => {
         event_date: "",
         event_time: "",
         location: "",
+        latitude: "",
+        longitude: "",
+        google_maps_url: "",
         event_type_id: "",
         customer_id: "",
         card_type_id: "",
@@ -386,6 +404,9 @@ const Events: React.FC = () => {
       event_date: eventDate,
       event_time: eventTime,
       location: eventItem.event_location || eventItem.location || "",
+      latitude: eventItem.latitude?.toString() || "",
+      longitude: eventItem.longitude?.toString() || "",
+      google_maps_url: eventItem.google_maps_url || "",
       event_type_id: eventItem.event_type?.id?.toString() || "",
       customer_id: eventItem.customer?.id?.toString() || "",
       card_type_id: "",
@@ -778,6 +799,50 @@ const Events: React.FC = () => {
                         </option>
                       ))}
                     </select>
+                  </div>
+                </div>
+
+                {/* Location Coordinates */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Latitude
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={formData.latitude}
+                      onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                      placeholder="e.g., -6.8235"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Longitude
+                    </label>
+                    <input
+                      type="number"
+                      step="any"
+                      value={formData.longitude}
+                      onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                      placeholder="e.g., 39.2695"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      Google Maps URL (Optional)
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.google_maps_url}
+                      onChange={(e) => setFormData({ ...formData, google_maps_url: e.target.value })}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                      placeholder="https://maps.google.com/?q=..."
+                    />
                   </div>
                 </div>
               </div>
