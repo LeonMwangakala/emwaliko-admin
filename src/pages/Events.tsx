@@ -30,11 +30,27 @@ interface Event {
     id: number;
     name: string;
   };
+  card_type?: {
+    id: number;
+    name: string;
+  };
   package?: {
     id: number;
     name: string;
     amount: number;
     currency: string;
+  };
+  country?: {
+    id: number;
+    name: string;
+  };
+  region?: {
+    id: number;
+    name: string;
+  };
+  district?: {
+    id: number;
+    name: string;
   };
   guests_count?: number;
   total_guests?: number;
@@ -409,18 +425,26 @@ const Events: React.FC = () => {
       google_maps_url: eventItem.google_maps_url || "",
       event_type_id: eventItem.event_type?.id?.toString() || "",
       customer_id: eventItem.customer?.id?.toString() || "",
-      card_type_id: "",
+      card_type_id: eventItem.card_type?.id?.toString() || "",
       package_id: eventItem.package?.id?.toString() || "",
       notification_date: notificationDate,
       notification_time: notificationTime,
-      country_id: "",
-      region_id: "",
-      district_id: "",
+      country_id: eventItem.country?.id?.toString() || "",
+      region_id: eventItem.region?.id?.toString() || "",
+      district_id: eventItem.district?.id?.toString() || "",
     };
     
     console.log('Setting form data:', formDataToSet);
     setFormData(formDataToSet);
     setShowEditModal(true);
+    
+    // Load regions and districts if country and region are set
+    if (eventItem.country?.id) {
+      handleCountryChange(eventItem.country.id.toString());
+    }
+    if (eventItem.region?.id) {
+      handleRegionChange(eventItem.region.id.toString());
+    }
   };
 
   if (!user) return null;
