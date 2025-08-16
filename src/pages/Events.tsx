@@ -22,6 +22,13 @@ interface Event {
   google_maps_url?: string;
   notification_date?: string;
   status: "initiated" | "inprogress" | "notified" | "scanned" | "completed" | "cancelled";
+  // Card design position fields
+  name_position_x?: number;
+  name_position_y?: number;
+  qr_position_x?: number;
+  qr_position_y?: number;
+  card_class_position_x?: number;
+  card_class_position_y?: number;
   event_type?: {
     id: number;
     name: string;
@@ -95,6 +102,13 @@ const Events: React.FC = () => {
     country_id: "",
     region_id: "",
     district_id: "",
+    // Card design position fields
+    name_position_x: "",
+    name_position_y: "",
+    qr_position_x: "",
+    qr_position_y: "",
+    card_class_position_x: "",
+    card_class_position_y: "",
   });
 
   // Dropdown options state
@@ -274,6 +288,12 @@ const Events: React.FC = () => {
         country_id: "",
         region_id: "",
         district_id: "",
+        name_position_x: "",
+        name_position_y: "",
+        qr_position_x: "",
+        qr_position_y: "",
+        card_class_position_x: "",
+        card_class_position_y: "",
       });
       
       setShowCreateModal(false);
@@ -348,6 +368,12 @@ const Events: React.FC = () => {
         country_id: "",
         region_id: "",
         district_id: "",
+        name_position_x: "",
+        name_position_y: "",
+        qr_position_x: "",
+        qr_position_y: "",
+        card_class_position_x: "",
+        card_class_position_y: "",
       });
       
       setShowEditModal(false);
@@ -470,6 +496,12 @@ const Events: React.FC = () => {
       country_id: eventItem.country?.id?.toString() || "",
       region_id: eventItem.region?.id?.toString() || "",
       district_id: eventItem.district?.id?.toString() || "",
+      name_position_x: eventItem.name_position_x?.toString() || "",
+      name_position_y: eventItem.name_position_y?.toString() || "",
+      qr_position_x: eventItem.qr_position_x?.toString() || "",
+      qr_position_y: eventItem.qr_position_y?.toString() || "",
+      card_class_position_x: eventItem.card_class_position_x?.toString() || "",
+      card_class_position_y: eventItem.card_class_position_y?.toString() || "",
     };
     
     console.log('Setting form data:', formDataToSet);

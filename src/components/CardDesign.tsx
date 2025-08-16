@@ -11,20 +11,30 @@ interface CardDesignProps {
 interface CardType {
   id: number;
   name: string;
-  name_position_x: number;
-  name_position_y: number;
-  qr_position_x: number;
-  qr_position_y: number;
-  card_class_position_x: number;
-  card_class_position_y: number;
   show_guest_name?: boolean;
   show_card_class?: boolean;
+  show_qr_code?: boolean;
+}
+
+interface Event {
+  id: number;
+  name_position_x?: number;
+  name_position_y?: number;
+  qr_position_x?: number;
+  qr_position_y?: number;
+  card_class_position_x?: number;
+  card_class_position_y?: number;
+  name_text_color?: string;
+  card_class_text_color?: string;
+  name_text_size?: number;
+  card_class_text_size?: number;
 }
 
 interface Guest {
   id: number;
   name: string;
   title?: string;
+  invite_code?: string;
   qr_code_path?: string;
   qr_code_base64?: string;
   card_class?: {
@@ -49,6 +59,7 @@ interface CardDesignGetResponse {
 
 const CardDesign: React.FC<CardDesignProps> = ({ eventId, cardTypeId, cardDesignPath, onCardDesignUpdate }) => {
   const [cardType, setCardType] = useState<CardType | null>(null);
+  const [event, setEvent] = useState<Event | null>(null);
   const [guests, setGuests] = useState<Guest[]>([]);
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);
   const [positions, setPositions] = useState({
@@ -59,6 +70,18 @@ const CardDesign: React.FC<CardDesignProps> = ({ eventId, cardTypeId, cardDesign
     card_class_x: 20,
     card_class_y: 90,
   });
+  const [textColors, setTextColors] = useState({
+    name_color: '#000000',
+    card_class_color: '#333333',
+  });
+  const [textSizes, setTextSizes] = useState({
+    name_size: 98,
+    card_class_size: 60,
+  });
+  
+
+  const [textSizesInitialized, setTextSizesInitialized] = useState(false);
+  const [textColorsInitialized, setTextColorsInitialized] = useState(false);
   const [showGuestName, setShowGuestName] = useState(true);
   const [showCardClass, setShowCardClass] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -74,6 +97,7 @@ const CardDesign: React.FC<CardDesignProps> = ({ eventId, cardTypeId, cardDesign
 
   useEffect(() => {
     fetchCardType();
+    fetchEvent();
     fetchGuests();
   }, [cardTypeId, eventId]);
 
@@ -82,19 +106,46 @@ const CardDesign: React.FC<CardDesignProps> = ({ eventId, cardTypeId, cardDesign
   }, [cardDesignPath]);
 
   useEffect(() => {
-    if (cardType) {
-      setPositions({
-        name_x: cardType.name_position_x,
-        name_y: cardType.name_position_y,
-        qr_x: cardType.qr_position_x,
-        qr_y: cardType.qr_position_y,
-        card_class_x: cardType.card_class_position_x,
-        card_class_y: cardType.card_class_position_y,
-      });
-      setShowGuestName(cardType.show_guest_name || true);
-      setShowCardClass(cardType.show_card_class || true);
+    if (event && cardType) {
+      // Use event-specific positions with fallback to defaults
+      const newPositions = {
+        name_x: event.name_position_x ?? 50,
+        name_y: event.name_position_y ?? 30,
+        qr_x: event.qr_position_x ?? 80,
+        qr_y: event.qr_position_y ?? 70,
+        card_class_x: event.card_class_position_x ?? 20,
+        card_class_y: event.card_class_position_y ?? 90,
+      };
+      
+      // Only set text colors on initial load, not on every event change
+      const newTextColors = textColorsInitialized ? textColors : {
+        name_color: event.name_text_color ?? '#000000',
+        card_class_color: event.card_class_text_color ?? '#333333',
+      };
+      
+      // Only set text sizes on initial load, not on every event change
+      const newTextSizes = textSizesInitialized ? textSizes : {
+        name_size: event.name_text_size ?? 98,
+        card_class_size: event.card_class_text_size ?? 60,
+      };
+      
+      setPositions(newPositions);
+      setTextColors(newTextColors);
+      setTextSizes(newTextSizes);
+      
+      // Mark text sizes and colors as initialized after first load
+      if (!textSizesInitialized) {
+        setTextSizesInitialized(true);
+      }
+      if (!textColorsInitialized) {
+        setTextColorsInitialized(true);
+      }
+      
+      // Use card type visibility settings
+      setShowGuestName(cardType.show_guest_name ?? true);
+      setShowCardClass(cardType.show_card_class ?? true);
     }
-  }, [cardType]);
+  }, [event, cardType]);
 
   useEffect(() => {
     if (guests.length > 0 && !selectedGuest) {
@@ -103,7 +154,6 @@ const CardDesign: React.FC<CardDesignProps> = ({ eventId, cardTypeId, cardDesign
   }, [guests]);
 
   useEffect(() => {
-    console.log('CardDesign: currentCardDesignPath changed:', currentCardDesignPath);
     if (currentCardDesignPath) {
       // Fetch card design as base64
       fetchCardDesign();
@@ -133,7 +183,21 @@ const CardDesign: React.FC<CardDesignProps> = ({ eventId, cardTypeId, cardDesign
         checkImageAndDraw();
       }, 100);
     }
-  }, [cardDesignBase64, selectedGuest, positions, showGuestName, showCardClass]);
+  }, [cardDesignBase64, selectedGuest, positions, showGuestName, showCardClass, textColors, textSizes]);
+
+  // Separate useEffect specifically for text size changes
+  useEffect(() => {
+    if (imageLoaded && selectedGuest) {
+      drawCard();
+    }
+  }, [textSizes.name_size, textSizes.card_class_size, imageLoaded, selectedGuest]);
+
+  // Separate useEffect specifically for text color changes
+  useEffect(() => {
+    if (imageLoaded && selectedGuest) {
+      drawCard();
+    }
+  }, [textColors.name_color, textColors.card_class_color]);
 
   const fetchCardType = async () => {
     try {
@@ -146,13 +210,35 @@ const CardDesign: React.FC<CardDesignProps> = ({ eventId, cardTypeId, cardDesign
     }
   };
 
+  const fetchEvent = async () => {
+    try {
+      const eventData = await apiService.getEvent(eventId) as Event;
+      setEvent(eventData);
+    } catch (error) {
+      console.error('Error fetching event:', error);
+      setError('Failed to fetch event data');
+    }
+  };
+
   const fetchGuests = async () => {
     try {
       const response = await apiService.getEventGuests(eventId) as any;
       const guestsData = response.data || response;
-      console.log('Fetched guests data:', guestsData);
-      console.log('Sample guest with QR code:', guestsData.find((g: Guest) => g.qr_code_path));
       setGuests(guestsData);
+      
+      // Check if any guests don't have QR codes and generate them
+      const guestsWithoutQR = guestsData.filter((g: Guest) => !g.qr_code_path && !g.qr_code_base64);
+      if (guestsWithoutQR.length > 0) {
+        try {
+          await apiService.generateMissingQrCodes(eventId);
+          // Refresh guests data after generating QR codes
+          setTimeout(() => {
+            fetchGuests();
+          }, 1000);
+        } catch (error) {
+          console.error('Error generating QR codes:', error);
+        }
+      }
     } catch (error) {
       console.error('Error fetching guests:', error);
       setError('Failed to fetch guests');
@@ -168,7 +254,6 @@ const CardDesign: React.FC<CardDesignProps> = ({ eventId, cardTypeId, cardDesign
     try {
       const response = await apiService.getCardDesign(eventId) as CardDesignGetResponse;
       setCardDesignBase64(response.card_design_base64);
-      console.log('Fetched card design as base64');
     } catch (error) {
       console.error('Error fetching card design:', error);
       setError('Failed to fetch card design');
@@ -212,108 +297,141 @@ const CardDesign: React.FC<CardDesignProps> = ({ eventId, cardTypeId, cardDesign
 
     // Draw guest name with appropriate font size for 3000x4200 canvas
     if (showGuestName) {
-      // Set font size to exactly 98px for 3000px width canvas
-      const fontSize = 98;
-      ctx.font = `bold ${fontSize}px Arial`;
-      ctx.fillStyle = '#000000';
+      ctx.font = `bold ${textSizes.name_size}px Arial`;
+      ctx.fillStyle = textColors.name_color;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(selectedGuest.name, nameX, nameY);
     }
 
-    // Draw QR code if available with appropriate size for 3000x4200 canvas
+    // Draw card class if enabled
+    console.log('Card class drawing check:', {
+      showCardClass,
+      hasCardClass: !!selectedGuest.card_class,
+      cardClassName: selectedGuest.card_class?.name,
+      cardClassSize: textSizes.card_class_size,
+      cardClassColor: textColors.card_class_color,
+      cardClassX,
+      cardClassY
+    });
+    
+    if (showCardClass && selectedGuest.card_class) {
+      console.log('Drawing card class:', selectedGuest.card_class.name, 'at', cardClassX, cardClassY, 'with color', textColors.card_class_color, 'size', textSizes.card_class_size);
+    } else if (showCardClass) {
+      // Draw a placeholder if card class is enabled but no card class data
+      console.log('Drawing card class placeholder at', cardClassX, cardClassY, 'with size', textSizes.card_class_size);
+      const placeholderText = 'CARD CLASS';
+      
+      // Add a background rectangle to make text more visible
+      const textMetrics = ctx.measureText(placeholderText);
+      const textWidth = textMetrics.width;
+      const textHeight = textSizes.card_class_size;
+      
+      // Draw background rectangle
+      ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+      ctx.fillRect(cardClassX - textWidth/2 - 10, cardClassY - textHeight/2 - 5, textWidth + 20, textHeight + 10);
+      
+      // Draw placeholder text
+      ctx.font = `bold ${textSizes.card_class_size}px Arial`;
+      ctx.fillStyle = textColors.card_class_color;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(placeholderText, cardClassX, cardClassY);
+      
+      // Draw size indicator
+      ctx.fillStyle = 'blue';
+      ctx.font = '20px Arial';
+      ctx.fillText(`Size: ${textSizes.card_class_size}px`, cardClassX, cardClassY + textHeight/2 + 30);
+    }
+    
+    // Draw card class if enabled
+    if (showCardClass && selectedGuest.card_class) {
+      ctx.font = `bold ${textSizes.card_class_size}px Arial`;
+      ctx.fillStyle = textColors.card_class_color;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(selectedGuest.card_class.name, cardClassX, cardClassY);
+    }
+
+    // Draw QR code
+
     if (selectedGuest.qr_code_base64) {
+      // Use base64 QR code if available
       const qrImage = new Image();
       qrImage.crossOrigin = 'anonymous';
       
       qrImage.onload = () => {
-        // Get fresh context in case it was cleared
         const freshCtx = canvas.getContext('2d');
-        if (!freshCtx) {
-          return;
-        }
+        if (!freshCtx) return;
         
-        // Redraw background image first
+        // Redraw everything
         freshCtx.drawImage(image, 0, 0, canvas.width, canvas.height);
         
-        // Redraw guest name if enabled
+        // Redraw guest name
         if (showGuestName) {
-          // Set font size to exactly 98px for 3000px width canvas
-          const fontSize = 98;
-          freshCtx.font = `bold ${fontSize}px Arial`;
-          freshCtx.fillStyle = '#000000';
+          freshCtx.font = `bold ${textSizes.name_size}px Arial`;
+          freshCtx.fillStyle = textColors.name_color;
           freshCtx.textAlign = 'center';
           freshCtx.textBaseline = 'middle';
           freshCtx.fillText(selectedGuest.name, nameX, nameY);
         }
         
-        // Set QR code size to exactly 600px for 3000px width canvas
+        // Redraw card class
+        if (showCardClass && selectedGuest.card_class) {
+          freshCtx.font = `bold ${textSizes.card_class_size}px Arial`;
+          freshCtx.fillStyle = textColors.card_class_color;
+          freshCtx.textAlign = 'center';
+          freshCtx.textBaseline = 'middle';
+          freshCtx.fillText(selectedGuest.card_class.name, cardClassX, cardClassY);
+        }
+        
+        // Draw QR code
         const qrSize = 600;
         freshCtx.drawImage(qrImage, qrX - qrSize/2, qrY - qrSize/2, qrSize, qrSize);
       };
       
       qrImage.onerror = () => {
-        // Draw a placeholder rectangle if QR code fails to load
-        const freshCtx = canvas.getContext('2d');
-        if (freshCtx) {
-          // Set QR code size to exactly 600px for 3000px width canvas
-          const qrSize = 600;
-          freshCtx.fillStyle = '#ff0000';
-          freshCtx.fillRect(qrX - qrSize/2, qrY - qrSize/2, qrSize, qrSize);
-          freshCtx.fillStyle = '#ffffff';
-          freshCtx.font = `${Math.round(qrSize/4)}px Arial`;
-          freshCtx.textAlign = 'center';
-          freshCtx.textBaseline = 'middle';
-          freshCtx.fillText('QR', qrX, qrY);
-        }
+        drawQRPlaceholder(ctx, qrX, qrY, 'QR FAILED');
       };
       
       qrImage.src = selectedGuest.qr_code_base64;
     } else if (selectedGuest.qr_code_path) {
-      // Fallback to URL if base64 is not available
+      // Use URL QR code if available
       const qrImage = new Image();
       qrImage.crossOrigin = 'anonymous';
       
       qrImage.onload = () => {
-        // Get fresh context in case it was cleared
         const freshCtx = canvas.getContext('2d');
-        if (!freshCtx) {
-          return;
-        }
+        if (!freshCtx) return;
         
-        // Redraw background image first
+        // Redraw everything
         freshCtx.drawImage(image, 0, 0, canvas.width, canvas.height);
         
-        // Redraw guest name if enabled
+        // Redraw guest name
         if (showGuestName) {
-          // Set font size to exactly 98px for 3000px width canvas
-          const fontSize = 98;
-          freshCtx.font = `bold ${fontSize}px Arial`;
-          freshCtx.fillStyle = '#000000';
+          freshCtx.font = `bold ${textSizes.name_size}px Arial`;
+          freshCtx.fillStyle = textColors.name_color;
           freshCtx.textAlign = 'center';
           freshCtx.textBaseline = 'middle';
           freshCtx.fillText(selectedGuest.name, nameX, nameY);
         }
         
-        // Set QR code size to exactly 600px for 3000px width canvas
+        // Redraw card class
+        if (showCardClass && selectedGuest.card_class) {
+          freshCtx.font = `bold ${textSizes.card_class_size}px Arial`;
+          freshCtx.fillStyle = textColors.card_class_color;
+          freshCtx.textAlign = 'center';
+          freshCtx.textBaseline = 'middle';
+          freshCtx.fillText(selectedGuest.card_class.name, cardClassX, cardClassY);
+        }
+        
+        // Draw QR code
         const qrSize = 600;
         freshCtx.drawImage(qrImage, qrX - qrSize/2, qrY - qrSize/2, qrSize, qrSize);
       };
       
       qrImage.onerror = () => {
-        // Draw a placeholder rectangle if QR code fails to load
-        const freshCtx = canvas.getContext('2d');
-        if (freshCtx) {
-          // Set QR code size to exactly 600px for 3000px width canvas
-          const qrSize = 600;
-          freshCtx.fillStyle = '#ff0000';
-          freshCtx.fillRect(qrX - qrSize/2, qrY - qrSize/2, qrSize, qrSize);
-          freshCtx.fillStyle = '#ffffff';
-          freshCtx.font = `${Math.round(qrSize/4)}px Arial`;
-          freshCtx.textAlign = 'center';
-          freshCtx.textBaseline = 'middle';
-          freshCtx.fillText('QR', qrX, qrY);
-        }
+        drawQRPlaceholder(ctx, qrX, qrY, 'QR FAILED');
       };
       
       // Construct full URL for QR code
@@ -323,27 +441,8 @@ const CardDesign: React.FC<CardDesignProps> = ({ eventId, cardTypeId, cardDesign
       
       qrImage.src = qrCodeUrl;
     } else {
-      // Draw a placeholder rectangle if no QR code
-      // Set QR code size to exactly 600px for 3000px width canvas
-      const qrSize = 600;
-      ctx.fillStyle = '#ff0000';
-      ctx.fillRect(qrX - qrSize/2, qrY - qrSize/2, qrSize, qrSize);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = `${Math.round(qrSize/4)}px Arial`;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('NO QR', qrX, qrY);
-    }
-
-    // Draw card class if enabled
-    if (showCardClass && selectedGuest.card_class) {
-      // Set font size to exactly 60px for 3000px width canvas
-      const fontSize = 60;
-      ctx.font = `bold ${fontSize}px Arial`;
-      ctx.fillStyle = '#333333';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(selectedGuest.card_class.name, cardClassX, cardClassY);
+      // No QR code available, draw placeholder
+      drawQRPlaceholder(ctx, qrX, qrY, 'NO QR');
     }
   };
 
@@ -354,31 +453,68 @@ const CardDesign: React.FC<CardDesignProps> = ({ eventId, cardTypeId, cardDesign
     }));
   };
 
+  const handleTextColorChange = (field: string, value: string) => {
+    setTextColors(prev => ({
+      ...prev,
+      [field]: value
+    }));
+    
+    // Mark that user has manually changed text colors
+    setTextColorsInitialized(true);
+  };
+
+  const handleTextSizeChange = (field: string, value: number) => {
+    const clampedValue = Math.max(12, Math.min(200, value));
+    
+    setTextSizes(prev => ({
+      ...prev,
+      [field]: clampedValue
+    }));
+    
+    // Mark that user has manually changed text sizes
+    setTextSizesInitialized(true);
+  };
+
+  // Helper function to draw QR code placeholder
+  const drawQRPlaceholder = (ctx: CanvasRenderingContext2D, x: number, y: number, text: string) => {
+    const qrSize = 600;
+    ctx.fillStyle = '#ff0000';
+    ctx.fillRect(x - qrSize/2, y - qrSize/2, qrSize, qrSize);
+    ctx.fillStyle = '#ffffff';
+    ctx.font = `${Math.round(qrSize/4)}px Arial`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(text, x, y);
+  };
+
+
+
   const handleSavePositions = async () => {
-    if (!cardType) return;
+    if (!event) return;
 
     setLoading(true);
     setError('');
     setSuccess('');
 
     try {
-      await apiService.updateCardType(cardType.id, {
-        name: cardType.name,
+      await apiService.updateEvent(event.id, {
         name_position_x: positions.name_x,
         name_position_y: positions.name_y,
         qr_position_x: positions.qr_x,
         qr_position_y: positions.qr_y,
         card_class_position_x: positions.card_class_x,
         card_class_position_y: positions.card_class_y,
-        show_guest_name: showGuestName,
-        show_card_class: showCardClass,
+        name_text_color: textColors.name_color,
+        card_class_text_color: textColors.card_class_color,
+        name_text_size: textSizes.name_size,
+        card_class_text_size: textSizes.card_class_size,
       });
 
-      setSuccess('Card positions saved successfully!');
+      setSuccess('Card design settings saved successfully!');
       setTimeout(() => setSuccess(''), 3000);
     } catch (error: any) {
       console.error('Error saving positions:', error);
-      setError(error.message || 'Failed to save positions');
+      setError(error.message || 'Failed to save card design settings');
     } finally {
       setLoading(false);
     }
@@ -791,6 +927,44 @@ const CardDesign: React.FC<CardDesignProps> = ({ eventId, cardTypeId, cardDesign
                     />
                   </div>
                 </div>
+                
+                {/* Guest Name Text Color */}
+                <div className="mt-3">
+                  <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Text Color</label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="color"
+                      value={textColors.name_color}
+                      onChange={(e) => handleTextColorChange('name_color', e.target.value)}
+                      className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={textColors.name_color}
+                      onChange={(e) => handleTextColorChange('name_color', e.target.value)}
+                      className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      placeholder="#000000"
+                    />
+                  </div>
+                </div>
+                
+                {/* Guest Name Text Size */}
+                <div className="mt-3">
+                  <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Text Size (px)</label>
+                  <input
+                    type="number"
+                    min="12"
+                    max="200"
+                    value={textSizes.name_size}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const numValue = value === '' ? 98 : parseInt(value);
+                      handleTextSizeChange('name_size', isNaN(numValue) ? 98 : numValue);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    placeholder="98"
+                  />
+                </div>
               </div>
             )}
 
@@ -868,17 +1042,72 @@ const CardDesign: React.FC<CardDesignProps> = ({ eventId, cardTypeId, cardDesign
                     />
                   </div>
                 </div>
+                
+                {/* Card Class Text Color */}
+                <div className="mt-3">
+                  <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Text Color</label>
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="color"
+                      value={textColors.card_class_color}
+                      onChange={(e) => handleTextColorChange('card_class_color', e.target.value)}
+                      className="w-12 h-8 border border-gray-300 rounded cursor-pointer"
+                    />
+                    <input
+                      type="text"
+                      value={textColors.card_class_color}
+                      onChange={(e) => handleTextColorChange('card_class_color', e.target.value)}
+                      className="flex-1 px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      placeholder="#333333"
+                    />
+                  </div>
+                </div>
+                
+                {/* Card Class Text Size */}
+                <div className="mt-3">
+                  <label className="block text-xs text-gray-500 dark:text-gray-400 mb-1">Text Size (px)</label>
+                  <input
+                    type="number"
+                    min="12"
+                    max="200"
+                    value={textSizes.card_class_size}
+                    onChange={(e) => {
+                      const value = e.target.value;
+                      const numValue = value === '' ? 60 : parseInt(value);
+                      handleTextSizeChange('card_class_size', isNaN(numValue) ? 60 : numValue);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                    placeholder="60"
+                  />
+                </div>
               </div>
             )}
 
-            {/* Save Button */}
-            <button
-              onClick={handleSavePositions}
-              disabled={loading}
-              className="w-full px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Saving...' : 'Save Positions'}
-            </button>
+            {/* Save Buttons */}
+            <div className="space-y-2">
+              <button
+                onClick={handleSavePositions}
+                disabled={loading}
+                className="w-full px-4 py-2 bg-brand-500 text-white rounded-md hover:bg-brand-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-brand-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Saving...' : 'Save Card Design Settings'}
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    await apiService.generateMissingQrCodes(eventId);
+                    setSuccess('QR codes generated successfully!');
+                    setTimeout(() => setSuccess(''), 3000);
+                    fetchGuests(); // Refresh guests
+                  } catch (error) {
+                    setError('Failed to generate QR codes');
+                  }
+                }}
+                className="w-full px-4 py-2 bg-green-500 text-white rounded-md hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+              >
+                Generate QR Codes
+              </button>
+            </div>
           </div>
 
           {/* Instructions */}
@@ -899,8 +1128,9 @@ const CardDesign: React.FC<CardDesignProps> = ({ eventId, cardTypeId, cardDesign
               <li>• Use the number inputs to adjust position percentages</li>
               <li>• X: 0 = left edge, 100 = right edge</li>
               <li>• Y: 0 = top edge, 100 = bottom edge</li>
+              <li>• Use color pickers to customize text colors for better visibility</li>
               <li>• Changes are previewed in real-time</li>
-              <li>• Click "Save Positions" to update the card type</li>
+              <li>• Click "Save Positions" to update the event's card design settings</li>
               <li className="text-orange-600 dark:text-orange-400">• All dimensions maintain the same aspect ratio</li>
             </ul>
           </div>

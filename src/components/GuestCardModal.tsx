@@ -24,14 +24,24 @@ interface GuestCardModalProps {
 interface CardType {
   id: number;
   name: string;
-  name_position_x: number;
-  name_position_y: number;
-  qr_position_x: number;
-  qr_position_y: number;
-  card_class_position_x: number;
-  card_class_position_y: number;
   show_guest_name?: boolean;
   show_card_class?: boolean;
+  show_qr_code?: boolean;
+}
+
+interface Event {
+  id: number;
+  name: string;
+  name_position_x?: number;
+  name_position_y?: number;
+  qr_position_x?: number;
+  qr_position_y?: number;
+  card_class_position_x?: number;
+  card_class_position_y?: number;
+  name_text_color?: string;
+  card_class_text_color?: string;
+  name_text_size?: number;
+  card_class_text_size?: number;
 }
 
 const GuestCardModal: React.FC<GuestCardModalProps> = ({ 
@@ -43,6 +53,7 @@ const GuestCardModal: React.FC<GuestCardModalProps> = ({
   cardDesignPath 
 }) => {
   const [cardType, setCardType] = useState<CardType | null>(null);
+  const [event, setEvent] = useState<Event | null>(null);
   const [cardDesignBase64, setCardDesignBase64] = useState<string>('');
   const [error, setError] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -51,28 +62,37 @@ const GuestCardModal: React.FC<GuestCardModalProps> = ({
   useEffect(() => {
     if (isOpen && guest && cardDesignPath) {
       fetchCardType();
+      fetchEvent();
       fetchCardDesign();
     }
   }, [isOpen, guest, cardDesignPath, cardTypeId]);
 
   useEffect(() => {
-    if (cardDesignBase64 && cardType && guest) {
+    if (cardDesignBase64 && cardType && event && guest) {
       setTimeout(() => {
         drawCard();
       }, 100);
     }
-  }, [cardDesignBase64, cardType, guest]);
+  }, [cardDesignBase64, cardType, event, guest]);
 
   const fetchCardType = async () => {
     try {
       const cardTypes = await apiService.getCardTypes() as CardType[];
       const currentCardType = cardTypes.find((ct: CardType) => ct.id === cardTypeId);
-      console.log('Fetched card types:', cardTypes);
-      console.log('Current card type:', currentCardType);
       setCardType(currentCardType || null);
     } catch (error) {
       console.error('Error fetching card type:', error);
       setError('Failed to fetch card type');
+    }
+  };
+
+  const fetchEvent = async () => {
+    try {
+      const eventData = await apiService.getEvent(eventId) as Event;
+      setEvent(eventData);
+    } catch (error) {
+      console.error('Error fetching event:', error);
+      setError('Failed to fetch event data');
     }
   };
 
@@ -96,8 +116,7 @@ const GuestCardModal: React.FC<GuestCardModalProps> = ({
     const canvas = canvasRef.current;
     const image = imageRef.current;
     
-    if (!canvas || !image || !guest || !cardType) {
-      console.log('Missing required data for drawing:', { canvas: !!canvas, image: !!image, guest: !!guest, cardType: !!cardType });
+    if (!canvas || !image || !guest || !cardType || !event) {
       return;
     }
 
@@ -112,13 +131,6 @@ const GuestCardModal: React.FC<GuestCardModalProps> = ({
       return;
     }
 
-    console.log('Drawing card with data:', {
-      guestName: guest.name,
-      cardType: cardType.name,
-      showGuestName: cardType.show_guest_name,
-      namePosition: { x: cardType.name_position_x, y: cardType.name_position_y }
-    });
-
     // Clear canvas
     ctx.clearRect(0, 0, canvas.width, canvas.height);
 
@@ -126,20 +138,13 @@ const GuestCardModal: React.FC<GuestCardModalProps> = ({
     ctx.drawImage(image, 0, 0, canvas.width, canvas.height);
 
     // Calculate positions based on 3000x4200 dimensions
-    // Positions are stored as percentages (0-100)
-    const nameX = (cardType.name_position_x / 100) * canvas.width;
-    const nameY = (cardType.name_position_y / 100) * canvas.height;
-    const qrX = (cardType.qr_position_x / 100) * canvas.width;
-    const qrY = (cardType.qr_position_y / 100) * canvas.height;
-    const cardClassX = (cardType.card_class_position_x / 100) * canvas.width;
-    const cardClassY = (cardType.card_class_position_y / 100) * canvas.height;
-
-    console.log('Calculated positions:', {
-      name: { x: nameX, y: nameY, original: { x: cardType.name_position_x, y: cardType.name_position_y } },
-      qr: { x: qrX, y: qrY, original: { x: cardType.qr_position_x, y: cardType.qr_position_y } },
-      cardClass: { x: cardClassX, y: cardClassY, original: { x: cardType.card_class_position_x, y: cardType.card_class_position_y } },
-      canvas: { width: canvas.width, height: canvas.height }
-    });
+    // Use event-specific positions with fallbacks to defaults
+    const nameX = ((event.name_position_x ?? 50) / 100) * canvas.width;
+    const nameY = ((event.name_position_y ?? 30) / 100) * canvas.height;
+    const qrX = ((event.qr_position_x ?? 80) / 100) * canvas.width;
+    const qrY = ((event.qr_position_y ?? 70) / 100) * canvas.height;
+    const cardClassX = ((event.card_class_position_x ?? 20) / 100) * canvas.width;
+    const cardClassY = ((event.card_class_position_y ?? 90) / 100) * canvas.height;
 
     // Helper function to draw text with shadow
     const drawTextWithShadow = (text: string, x: number, y: number, fontSize: number, color: string = '#000000') => {
@@ -165,10 +170,9 @@ const GuestCardModal: React.FC<GuestCardModalProps> = ({
 
     // Draw guest name if enabled
     if (cardType.show_guest_name !== false) {
-      console.log('Drawing guest name:', guest.name, 'at position:', { x: nameX, y: nameY });
-      drawTextWithShadow(guest.name, nameX, nameY, 98);
-    } else {
-      console.log('Guest name not shown because show_guest_name is false');
+      const fontSize = event.name_text_size ?? 98;
+      const textColor = event.name_text_color ?? '#000000';
+      drawTextWithShadow(guest.name, nameX, nameY, fontSize, textColor);
     }
 
     // Draw QR code
@@ -185,7 +189,9 @@ const GuestCardModal: React.FC<GuestCardModalProps> = ({
         
         // Redraw guest name if enabled
         if (cardType.show_guest_name) {
-          drawTextWithShadow(guest.name, nameX, nameY, 98);
+          const fontSize = event.name_text_size ?? 98;
+          const textColor = event.name_text_color ?? '#000000';
+          drawTextWithShadow(guest.name, nameX, nameY, fontSize, textColor);
         }
         
         // Draw QR code
@@ -194,13 +200,13 @@ const GuestCardModal: React.FC<GuestCardModalProps> = ({
         
         // Draw card class if enabled
         if (cardType.show_card_class && guest.card_class) {
-          console.log('Drawing card class:', guest.card_class.name, 'at position:', { x: cardClassX, y: cardClassY });
-          drawTextWithShadow(guest.card_class.name, cardClassX, cardClassY, 60, '#333333');
+          const fontSize = event.card_class_text_size ?? 60;
+          const textColor = event.card_class_text_color ?? '#333333';
+          drawTextWithShadow(guest.card_class.name, cardClassX, cardClassY, fontSize, textColor);
         }
       };
       
       qrImage.onerror = () => {
-        console.error('Failed to load QR code image for guest:', guest.name);
         const freshCtx = canvas.getContext('2d');
         if (freshCtx) {
           const qrSize = 600;
@@ -229,7 +235,9 @@ const GuestCardModal: React.FC<GuestCardModalProps> = ({
         
         // Redraw guest name if enabled
         if (cardType.show_guest_name) {
-          drawTextWithShadow(guest.name, nameX, nameY, 98);
+          const fontSize = event.name_text_size ?? 98;
+          const textColor = event.name_text_color ?? '#000000';
+          drawTextWithShadow(guest.name, nameX, nameY, fontSize, textColor);
         }
         
         // Draw QR code
@@ -238,12 +246,13 @@ const GuestCardModal: React.FC<GuestCardModalProps> = ({
         
         // Draw card class if enabled
         if (cardType.show_card_class && guest.card_class) {
-          drawTextWithShadow(guest.card_class.name, cardClassX, cardClassY, 60, '#333333');
+          const fontSize = event.card_class_text_size ?? 60;
+          const textColor = event.card_class_text_color ?? '#333333';
+          drawTextWithShadow(guest.card_class.name, cardClassX, cardClassY, fontSize, textColor);
         }
       };
       
       qrImage.onerror = () => {
-        console.error('Failed to load QR code image for guest:', guest.name);
         const freshCtx = canvas.getContext('2d');
         if (freshCtx) {
           const qrSize = 600;
@@ -277,8 +286,9 @@ const GuestCardModal: React.FC<GuestCardModalProps> = ({
 
     // Draw card class if enabled
     if (cardType.show_card_class && guest.card_class) {
-      console.log('Drawing card class:', guest.card_class.name, 'at position:', { x: cardClassX, y: cardClassY });
-      drawTextWithShadow(guest.card_class.name, cardClassX, cardClassY, 80, '#333333');
+      const fontSize = event.card_class_text_size ?? 60;
+      const textColor = event.card_class_text_color ?? '#333333';
+      drawTextWithShadow(guest.card_class.name, cardClassX, cardClassY, fontSize, textColor);
     }
   };
 
