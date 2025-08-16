@@ -192,6 +192,22 @@ class ApiService {
     });
   }
 
+  async saveCanvasCard(guestId: number, canvasImageData: string) {
+    return this.request('/guests/save-canvas-card', {
+      method: 'POST',
+      body: JSON.stringify({
+        guest_id: guestId,
+        canvas_image: canvasImageData
+      }),
+    });
+  }
+
+  async generateAllMissingCards(eventId: number) {
+    return this.request(`/events/${eventId}/guests/generate-all-cards`, {
+      method: 'POST',
+    });
+  }
+
   async getEventNotifications(eventId: number, page?: number, perPage?: number, search?: string) {
     const params: Record<string, string | number> = {};
     if (page) params.page = page;
@@ -734,6 +750,13 @@ class ApiService {
 
   async getReportFilterOptions(): Promise<any> {
     return this.request('/reports/filter-options');
+  }
+
+  // Delete guest card
+  async deleteGuestCard(guestId: number): Promise<any> {
+    return this.request(`/guests/${guestId}/card`, {
+      method: 'DELETE',
+    });
   }
 }
 

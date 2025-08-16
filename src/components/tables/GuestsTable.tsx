@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import Pagination from "../common/Pagination";
-import { formatDate } from "../../utils/dateUtils";
 import { PhoneNumberValidator } from '../../utils/phoneValidation';
 import { Guest } from '../../types/guest';
 import { PaginationProps } from '../../types/pagination';
 import { apiService } from '../../services/api';
+import GenerateAllCardsModal from '../GenerateAllCardsModal';
 
 interface GuestsTableProps {
   guests: Guest[];
@@ -18,6 +18,9 @@ interface GuestsTableProps {
   cardTypeId?: number;
   cardDesignPath?: string;
   onViewCard?: (guest: Guest) => void;
+  event?: any; // Add event prop for card generation
+  cardType?: any; // Add cardType prop for card generation
+  onRefresh?: () => void; // Add refresh function prop
 }
 
 const GuestsTable: React.FC<GuestsTableProps> = ({ 
@@ -31,10 +34,18 @@ const GuestsTable: React.FC<GuestsTableProps> = ({
   eventId,
   cardTypeId,
   cardDesignPath,
-  onViewCard
+  onViewCard,
+  event,
+  cardType,
+  onRefresh
 }) => {
   // Local state for search input to prevent cursor jumping
   const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
+  
+  // Generate all cards modal state
+  const [showGenerateAllModal, setShowGenerateAllModal] = useState(false);
+  
+
 
   // Sync local state with prop
   useEffect(() => {
@@ -55,6 +66,8 @@ const GuestsTable: React.FC<GuestsTableProps> = ({
       onSearchChange("");
     }
   };
+
+
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -94,6 +107,26 @@ const GuestsTable: React.FC<GuestsTableProps> = ({
 
   return (
     <div>
+      {/* Generate All Cards Button */}
+      {event && cardType && (
+        <div className="mb-4 flex justify-between items-center">
+          <div className="flex items-center space-x-4">
+            <button
+              onClick={() => {
+                console.log('=== Generate All Cards button clicked ===');
+                setShowGenerateAllModal(true);
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              Generate All Cards
+            </button>
+            <span className="text-sm text-gray-600 dark:text-gray-400">
+              {guests.length} total guests
+            </span>
+          </div>
+        </div>
+      )}
+
       {/* Search Bar */}
       {onSearchChange && (
         <div className="mb-4">
@@ -148,6 +181,9 @@ const GuestsTable: React.FC<GuestsTableProps> = ({
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 RSVP Status
               </th>
+              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                Card Status
+              </th>
               <th className="px-6 py-3 text-center text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                 Action
               </th>
@@ -195,6 +231,15 @@ const GuestsTable: React.FC<GuestsTableProps> = ({
                     {guest.rsvp_status || 'Pending'}
                   </span>
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
+                    guest.guest_card_path 
+                      ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' 
+                      : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+                  }`}>
+                    {guest.guest_card_path ? 'Generated' : 'Not Generated'}
+                  </span>
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap text-center">
                   <div className="flex items-center justify-center space-x-2">
                     <button
@@ -205,13 +250,18 @@ const GuestsTable: React.FC<GuestsTableProps> = ({
                       Edit
                     </button>
                     {cardDesignPath && onViewCard && (
-                      <button
-                        onClick={() => onViewCard(guest)}
-                        className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none"
-                        title="View guest card"
-                      >
-                        Card
-                      </button>
+                      <div className="flex space-x-1">
+                        {onViewCard && (
+                          <button
+                            onClick={() => onViewCard(guest)}
+                            className="px-3 py-1 text-sm bg-green-500 text-white rounded hover:bg-green-600 focus:outline-none"
+                            title="View guest card"
+                          >
+                            View
+                          </button>
+                        )}
+
+                      </div>
                     )}
                   </div>
                 </td>
@@ -227,6 +277,15 @@ const GuestsTable: React.FC<GuestsTableProps> = ({
           <Pagination {...pagination} />
         </div>
       )}
+
+      {/* Generate All Cards Modal */}
+      <GenerateAllCardsModal
+        isOpen={showGenerateAllModal}
+        onClose={() => setShowGenerateAllModal(false)}
+        event={event}
+        cardType={cardType}
+        onRefresh={onRefresh}
+      />
     </div>
   );
 };

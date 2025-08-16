@@ -369,6 +369,8 @@ const ViewEvent: React.FC = () => {
     setShowGuestCardModal(true);
   };
 
+
+
   if (!user) return null;
 
   const tabConfig = [
@@ -716,6 +718,9 @@ const ViewEvent: React.FC = () => {
                     cardTypeId={event?.card_type?.id}
                     cardDesignPath={event?.card_design_path}
                     onViewCard={handleViewCard}
+                    event={event}
+                    cardType={event?.card_type}
+                    onRefresh={fetchTabData}
                   />
                 </div>
               )}
@@ -985,6 +990,7 @@ const ViewEvent: React.FC = () => {
           eventId={event.id}
           cardTypeId={event.card_type?.id || 1}
           cardDesignPath={event.card_design_path}
+          onRefresh={fetchTabData}
         />
       )}
       

@@ -7,6 +7,7 @@ export interface Guest {
   invite_code: string;
   qr_code_path?: string;
   qr_code_base64?: string;
+  guest_card_path?: string;
   rsvp_status: "Yes" | "No" | "Maybe" | "Pending";
   card_class?: {
     id: number;
