@@ -298,10 +298,10 @@ const GuestCardModal: React.FC<GuestCardModalProps> = ({
     <div className="fixed inset-0 z-[999999] overflow-y-auto">
       <div className="flex items-start justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         {/* Background overlay */}
-        <div className="fixed inset-0 bg-black/50 transition-opacity" onClick={onClose}></div>
+        <div className="fixed inset-0 bg-black/50 transition-opacity z-40" onClick={onClose}></div>
 
         {/* Modal panel */}
-        <div className="inline-block align-bottom bg-white dark:bg-gray-900 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full max-h-[85vh] overflow-y-auto">
+        <div className="relative z-50 inline-block align-bottom bg-white dark:bg-gray-900 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full max-h-[85vh] overflow-y-auto">
           {/* Header */}
           <div className="bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-200 dark:border-gray-700">
             <div className="flex items-center justify-between">
