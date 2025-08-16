@@ -109,6 +109,28 @@ const Events: React.FC = () => {
   const [loadingRegions, setLoadingRegions] = useState(false);
   const [loadingDistricts, setLoadingDistricts] = useState(false);
 
+  // Function to generate Google Maps URL from coordinates
+  const generateGoogleMapsUrl = (latitude: string, longitude: string): string => {
+    if (latitude && longitude && latitude.trim() !== "" && longitude.trim() !== "") {
+      const lat = parseFloat(latitude);
+      const lng = parseFloat(longitude);
+      if (!isNaN(lat) && !isNaN(lng)) {
+        return `https://maps.google.com/?q=${lat},${lng}&z=15`;
+      }
+    }
+    return "";
+  };
+
+  // Function to update Google Maps URL when coordinates change
+  const updateGoogleMapsUrl = (latitude: string, longitude: string) => {
+    const newUrl = generateGoogleMapsUrl(latitude, longitude);
+    setFormData(prev => ({
+      ...prev,
+      google_maps_url: newUrl
+    }));
+    console.log('Google Maps URL auto-generated:', newUrl);
+  };
+
   useEffect(() => {
     if (!user) return;
     fetchEvents();
@@ -218,8 +240,8 @@ const Events: React.FC = () => {
         event_date: formData.event_date,
         event_time: formData.event_time,
         event_location: formData.location,
-        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+        latitude: formData.latitude && formData.latitude.trim() !== "" ? parseFloat(formData.latitude) : null,
+        longitude: formData.longitude && formData.longitude.trim() !== "" ? parseFloat(formData.longitude) : null,
         google_maps_url: formData.google_maps_url && formData.google_maps_url.trim() !== "" ? formData.google_maps_url : null,
         event_type_id: formData.event_type_id || null,
         customer_id: formData.customer_id || null,
@@ -270,6 +292,14 @@ const Events: React.FC = () => {
     console.log('Update form submitted');
     console.log('Editing event:', editingEvent);
     console.log('Form data:', formData);
+    console.log('Form data details:', {
+      latitude: formData.latitude,
+      longitude: formData.longitude,
+      google_maps_url: formData.google_maps_url,
+      latitudeType: typeof formData.latitude,
+      longitudeType: typeof formData.longitude,
+      googleMapsUrlType: typeof formData.google_maps_url
+    });
 
     try {
       const eventData = {
@@ -277,8 +307,8 @@ const Events: React.FC = () => {
         event_date: formData.event_date,
         event_time: formData.event_time,
         event_location: formData.location,
-        latitude: formData.latitude ? parseFloat(formData.latitude) : null,
-        longitude: formData.longitude ? parseFloat(formData.longitude) : null,
+        latitude: formData.latitude && formData.latitude.trim() !== "" ? parseFloat(formData.latitude) : null,
+        longitude: formData.longitude && formData.longitude.trim() !== "" ? parseFloat(formData.longitude) : null,
         google_maps_url: formData.google_maps_url && formData.google_maps_url.trim() !== "" ? formData.google_maps_url : null,
         event_type_id: formData.event_type_id || null,
         customer_id: formData.customer_id || null,
@@ -293,6 +323,9 @@ const Events: React.FC = () => {
 
       console.log('Sending update request with data:', eventData);
       console.log('Event ID:', editingEvent.id);
+      console.log('Latitude value:', eventData.latitude, 'Type:', typeof eventData.latitude);
+      console.log('Longitude value:', eventData.longitude, 'Type:', typeof eventData.longitude);
+      console.log('Google Maps URL value:', eventData.google_maps_url, 'Type:', typeof eventData.google_maps_url);
 
       const response = await apiService.updateEvent(editingEvent.id, eventData);
       console.log('Update successful:', response);
@@ -414,15 +447,20 @@ const Events: React.FC = () => {
     const notificationDate = eventItem.notification_date ? eventItem.notification_date.split('T')[0] : '';
     const notificationTime = eventItem.notification_date ? eventItem.notification_date.split('T')[1]?.substring(0, 5) || '' : '';
     
+    // Generate Google Maps URL from coordinates if not already set
+    const latitude = eventItem.latitude !== null && eventItem.latitude !== undefined ? eventItem.latitude.toString() : "";
+    const longitude = eventItem.longitude !== null && eventItem.longitude !== undefined ? eventItem.longitude.toString() : "";
+    const googleMapsUrl = eventItem.google_maps_url || generateGoogleMapsUrl(latitude, longitude);
+
     // Pre-fill the form with event data
     const formDataToSet = {
       title: eventItem.event_name || eventItem.title || "",
       event_date: eventDate,
       event_time: eventTime,
       location: eventItem.event_location || eventItem.location || "",
-      latitude: eventItem.latitude !== null && eventItem.latitude !== undefined ? eventItem.latitude.toString() : "",
-      longitude: eventItem.longitude !== null && eventItem.longitude !== undefined ? eventItem.longitude.toString() : "",
-      google_maps_url: eventItem.google_maps_url || "",
+      latitude: latitude,
+      longitude: longitude,
+      google_maps_url: googleMapsUrl,
       event_type_id: eventItem.event_type?.id?.toString() || "",
       customer_id: eventItem.customer?.id?.toString() || "",
       card_type_id: eventItem.card_type?.id?.toString() || "",
@@ -435,6 +473,16 @@ const Events: React.FC = () => {
     };
     
     console.log('Setting form data:', formDataToSet);
+    console.log('Original event data:', {
+      latitude: eventItem.latitude,
+      longitude: eventItem.longitude,
+      google_maps_url: eventItem.google_maps_url
+    });
+    console.log('Form data to be set:', {
+      latitude: formDataToSet.latitude,
+      longitude: formDataToSet.longitude,
+      google_maps_url: formDataToSet.google_maps_url
+    });
     setFormData(formDataToSet);
     setShowEditModal(true);
     
@@ -832,41 +880,60 @@ const Events: React.FC = () => {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Latitude
                     </label>
-                    <input
-                      type="number"
-                      step="any"
-                      value={formData.latitude}
-                      onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                      placeholder="e.g., -6.8235"
-                    />
+                                      <input
+                    type="number"
+                    step="any"
+                    value={formData.latitude}
+                    onChange={(e) => {
+                      const newLatitude = e.target.value;
+                      setFormData({ ...formData, latitude: newLatitude });
+                      updateGoogleMapsUrl(newLatitude, formData.longitude);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                    placeholder="e.g., -6.8235"
+                  />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Longitude
                     </label>
-                    <input
-                      type="number"
-                      step="any"
-                      value={formData.longitude}
-                      onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                      placeholder="e.g., 39.2695"
-                    />
+                                      <input
+                    type="number"
+                    step="any"
+                    value={formData.longitude}
+                    onChange={(e) => {
+                      const newLongitude = e.target.value;
+                      setFormData({ ...formData, longitude: newLongitude });
+                      updateGoogleMapsUrl(formData.latitude, newLongitude);
+                    }}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                    placeholder="e.g., 39.2695"
+                  />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Google Maps URL (Optional)
                     </label>
-                    <input
-                      type="url"
-                      value={formData.google_maps_url}
-                      onChange={(e) => setFormData({ ...formData, google_maps_url: e.target.value })}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                      placeholder="https://maps.google.com/?q=..."
-                    />
+                    <div className="flex gap-2">
+                      <input
+                        type="url"
+                        value={formData.google_maps_url}
+                        onChange={(e) => setFormData({ ...formData, google_maps_url: e.target.value })}
+                        className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                        placeholder="https://maps.google.com/?q=..."
+                      />
+                      <button
+                        type="button"
+                        onClick={() => updateGoogleMapsUrl(formData.latitude, formData.longitude)}
+                        disabled={!formData.latitude || !formData.longitude}
+                        className="px-3 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+                        title="Generate URL from coordinates"
+                      >
+                        Generate
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1180,7 +1247,12 @@ const Events: React.FC = () => {
                     type="number"
                     step="any"
                     value={formData.latitude}
-                    onChange={(e) => setFormData({ ...formData, latitude: e.target.value })}
+                    onChange={(e) => {
+                      console.log('Latitude input changed:', e.target.value);
+                      const newLatitude = e.target.value;
+                      setFormData({ ...formData, latitude: newLatitude });
+                      updateGoogleMapsUrl(newLatitude, formData.longitude);
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
                     placeholder="e.g., -6.8235"
                   />
@@ -1194,7 +1266,12 @@ const Events: React.FC = () => {
                     type="number"
                     step="any"
                     value={formData.longitude}
-                    onChange={(e) => setFormData({ ...formData, longitude: e.target.value })}
+                    onChange={(e) => {
+                      console.log('Longitude input changed:', e.target.value);
+                      const newLongitude = e.target.value;
+                      setFormData({ ...formData, longitude: newLongitude });
+                      updateGoogleMapsUrl(formData.latitude, newLongitude);
+                    }}
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
                     placeholder="e.g., 39.2695"
                   />
@@ -1204,13 +1281,24 @@ const Events: React.FC = () => {
                   <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Google Maps URL (Optional)
                   </label>
-                  <input
-                    type="url"
-                    value={formData.google_maps_url}
-                    onChange={(e) => setFormData({ ...formData, google_maps_url: e.target.value })}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                    placeholder="https://maps.google.com/?q=..."
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="url"
+                      value={formData.google_maps_url}
+                      onChange={(e) => setFormData({ ...formData, google_maps_url: e.target.value })}
+                      className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                      placeholder="https://maps.google.com/?q=..."
+                    />
+                    <button
+                      type="button"
+                      onClick={() => updateGoogleMapsUrl(formData.latitude, formData.longitude)}
+                      disabled={!formData.latitude || !formData.longitude}
+                      className="px-3 py-2 text-sm bg-blue-500 text-white rounded-md hover:bg-blue-600 disabled:bg-gray-300 disabled:text-gray-500 disabled:cursor-not-allowed"
+                      title="Generate URL from coordinates"
+                    >
+                      Generate
+                    </button>
+                  </div>
                 </div>
               </div>
 

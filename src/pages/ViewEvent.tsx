@@ -510,11 +510,15 @@ const ViewEvent: React.FC = () => {
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Latitude</label>
-                    <p className="mt-1 text-sm text-gray-900 dark:text-white">{event.latitude || 'Not specified'}</p>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                      {event.latitude ? Number(event.latitude).toFixed(6) : 'Not specified'}
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Longitude</label>
-                    <p className="mt-1 text-sm text-gray-900 dark:text-white">{event.longitude || 'Not specified'}</p>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                      {event.longitude ? Number(event.longitude).toFixed(6) : 'Not specified'}
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Google Maps URL</label>
