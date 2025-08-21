@@ -99,8 +99,9 @@ const ExcelUploadModal: React.FC<ExcelUploadModalProps> = ({
       }
     }
     
-    // Validate card class
-    const cardClass = parseInt(data['Card Class']);
+    // Validate card class - convert to number and validate
+    const cardClassStr = data['Card Class']?.trim() || '';
+    const cardClass = parseInt(cardClassStr);
     if (isNaN(cardClass) || ![1, 2, 3].includes(cardClass)) {
       errors.push('Card Class must be 1, 2, or 3');
     }
@@ -171,14 +172,14 @@ const ExcelUploadModal: React.FC<ExcelUploadModalProps> = ({
       const parsedGuests: ParsedGuest[] = [];
       
       // Extract all phone numbers from uploaded data for duplicate checking
-      const uploadedPhoneNumbers = dataRows.map((row: any) => (row[2] || '').trim()).filter(p => p);
+      const uploadedPhoneNumbers = dataRows.map((row: any) => String(row[2] || '').trim()).filter(p => p);
 
       dataRows.forEach((row: any, index: number) => {
         const rowData = {
-          Name: row[0] || '',
-          Title: row[1] || '',
-          'Phone Number': row[2] || '',
-          'Card Class': row[3] || ''
+          Name: String(row[0] || ''),
+          Title: String(row[1] || ''),
+          'Phone Number': String(row[2] || ''),
+          'Card Class': String(row[3] || '')
         };
         
         const validatedGuest = validateGuestData(rowData, index + 2, uploadedPhoneNumbers);
