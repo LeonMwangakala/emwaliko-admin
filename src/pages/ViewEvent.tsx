@@ -58,7 +58,17 @@ interface Event {
     name: string;
   };
   guests_count?: number;
-  scanner_person?: string;
+  scanners?: Array<{
+    id: number;
+    user_id: number;
+    role: 'primary' | 'secondary';
+    is_active: boolean;
+    user: {
+      id: number;
+      name: string;
+      email: string;
+    };
+  }>;
   notification_date?: string;
   card_design_path?: string;
   card_design_base64?: string;
@@ -553,8 +563,12 @@ const ViewEvent: React.FC = () => {
                     <p className="mt-1 text-sm text-gray-900 dark:text-white">{event.guests_count || 0}</p>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Scanner Person</label>
-                    <p className="mt-1 text-sm text-gray-900 dark:text-white">{event.scanner_person || 'Not assigned'}</p>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Scanners</label>
+                    <p className="mt-1 text-sm text-gray-900 dark:text-white">
+                      {event.scanners && event.scanners.length > 0 ? (
+                        event.scanners.map(scanner => `${scanner.user.name} (${scanner.role})`).join(', ')
+                      ) : 'Not assigned'}
+                    </p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">Card Type</label>
@@ -876,7 +890,6 @@ const ViewEvent: React.FC = () => {
                       eventId={event.id} 
                       initialSettings={{
                         notification_date: event.notification_date,
-                        scanner_person: event.scanner_person,
                       }}
                       onSuccess={() => {
                         // Refresh the event data after successful settings update

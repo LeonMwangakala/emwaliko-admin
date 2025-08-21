@@ -295,6 +295,46 @@ class ApiService {
     });
   }
 
+  // Event Scanner management methods
+  async getEventScanners(eventId: number) {
+    return this.request(`/events/${eventId}/scanners`);
+  }
+
+  async assignEventScanner(eventId: number, data: {
+    user_id: number;
+    role: 'primary' | 'secondary';
+  }) {
+    return this.request(`/events/${eventId}/scanners`, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async updateEventScannerRole(eventId: number, scannerId: number, data: {
+    role: 'primary' | 'secondary';
+  }) {
+    return this.request(`/events/${eventId}/scanners/${scannerId}/role`, {
+      method: 'PUT',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deactivateEventScanner(eventId: number, scannerId: number) {
+    return this.request(`/events/${eventId}/scanners/${scannerId}/deactivate`, {
+      method: 'PATCH',
+    });
+  }
+
+  async reactivateEventScanner(eventId: number, scannerId: number) {
+    return this.request(`/events/${eventId}/scanners/${scannerId}/reactivate`, {
+      method: 'PATCH',
+    });
+  }
+
+  async getAvailableScanners() {
+    return this.request('/scanners/available');
+  }
+
   // Customer management methods
   async getCustomers(page?: number, perPage?: number, search?: string) {
     const params: Record<string, string | number> = {};
