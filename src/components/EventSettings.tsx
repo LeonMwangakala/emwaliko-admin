@@ -41,6 +41,9 @@ const EventSettings: React.FC<EventSettingsProps> = ({ eventId, initialSettings,
   const [loadingCurrentScanners, setLoadingCurrentScanners] = useState(false);
   const [defaultNotificationDate, setDefaultNotificationDate] = useState<Date | undefined>();
 
+  // Ensure currentScanners is always an array
+  const safeCurrentScanners = Array.isArray(currentScanners) ? currentScanners : [];
+
   useEffect(() => {
     // Extract date and time from notification_date if it exists
     if (initialSettings.notification_date) {
@@ -83,10 +86,26 @@ const EventSettings: React.FC<EventSettingsProps> = ({ eventId, initialSettings,
     setLoadingCurrentScanners(true);
     try {
       const response = await apiService.getEventScanners(eventId);
-      setCurrentScanners((response as any).data || []);
+      console.log('getEventScanners response:', response);
+      
+      // Handle different response structures
+      let scanners: ScannerAssignment[] = [];
+      if (response && typeof response === 'object') {
+        if (Array.isArray(response)) {
+          scanners = response as ScannerAssignment[];
+        } else if ('data' in response && Array.isArray((response as any).data)) {
+          scanners = (response as any).data as ScannerAssignment[];
+        } else if ('scanners' in response && Array.isArray((response as any).scanners)) {
+          scanners = (response as any).scanners as ScannerAssignment[];
+        }
+      }
+      
+      console.log('Parsed scanners:', scanners);
+      setCurrentScanners(scanners);
     } catch (error) {
       console.error('Error loading current scanners:', error);
-      // Don't show error for this, just log it
+      // Set empty array on error to prevent filter errors
+      setCurrentScanners([]);
     } finally {
       setLoadingCurrentScanners(false);
     }
@@ -192,20 +211,20 @@ const EventSettings: React.FC<EventSettingsProps> = ({ eventId, initialSettings,
   };
 
   const getAvailableScanners = () => {
-    const assignedUserIds = currentScanners.map(s => s.user_id);
+    const assignedUserIds = safeCurrentScanners.map(s => s.user_id);
     return scannerUsers.filter(user => !assignedUserIds.includes(user.id));
   };
 
   const getPrimaryScanner = () => {
-    return currentScanners.find(s => s.role === 'primary' && s.is_active);
+    return safeCurrentScanners.find(s => s.role === 'primary' && s.is_active);
   };
 
   const getSecondaryScanners = () => {
-    return currentScanners.filter(s => s.role === 'secondary' && s.is_active);
+    return safeCurrentScanners.filter(s => s.role === 'secondary' && s.is_active);
   };
 
   const getInactiveScanners = () => {
-    return currentScanners.filter(s => !s.is_active);
+    return safeCurrentScanners.filter(s => !s.is_active);
   };
 
   return (
@@ -273,7 +292,7 @@ const EventSettings: React.FC<EventSettingsProps> = ({ eventId, initialSettings,
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium text-gray-900 dark:text-white">Scanner Management</h3>
           <div className="text-sm text-gray-500">
-            {currentScanners.filter(s => s.is_active).length} active scanner(s)
+            {safeCurrentScanners.filter(s => s.is_active).length} active scanner(s)
           </div>
         </div>
 
@@ -351,7 +370,7 @@ const EventSettings: React.FC<EventSettingsProps> = ({ eventId, initialSettings,
             <div className="flex items-center justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-500"></div>
             </div>
-          ) : currentScanners.length === 0 ? (
+          ) : safeCurrentScanners.length === 0 ? (
             <div className="text-center py-8 text-gray-500 dark:text-gray-400">
               <p>No scanners assigned to this event yet.</p>
               <p className="text-sm mt-1">Add scanners above to get started.</p>
