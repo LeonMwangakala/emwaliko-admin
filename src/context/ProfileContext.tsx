@@ -2,28 +2,27 @@ import React, { createContext, useContext, useState, useEffect, ReactNode, useCa
 import { apiService } from '../services/api';
 import { useAuth } from './AuthContext';
 
-interface UserProfile {
+interface Profile {
   id: number;
   name: string;
-  first_name: string;
-  last_name: string;
   email: string;
   phone_number: string;
   bio: string;
   user_code: string;
-  country: string;
-  region: string;
-  postal_code: string;
-  profile_picture: string;
-  role_id: number;
+  profile_picture?: string;
+  country?: string;
+  region?: string;
+  postal_code?: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface ProfileContextType {
-  profile: UserProfile | null;
+  profile: Profile | null;
   loading: boolean;
   error: string;
   refreshProfile: () => Promise<void>;
-  updateProfile: (data: Partial<UserProfile>) => Promise<void>;
+  updateProfile: (data: Partial<Profile>) => Promise<void>;
   updateProfilePicture: (file: File) => Promise<void>;
 }
 
@@ -43,7 +42,7 @@ interface ProfileProviderProps {
 
 export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) => {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -54,7 +53,7 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
     setError('');
     try {
       const data = await apiService.getProfile();
-      setProfile(data as UserProfile);
+      setProfile(data as Profile);
     } catch (e) {
       setError('Failed to fetch profile');
     } finally {
@@ -66,21 +65,17 @@ export const ProfileProvider: React.FC<ProfileProviderProps> = ({ children }) =>
     await fetchProfile();
   };
 
-  const updateProfile = async (data: Partial<UserProfile>) => {
+  const updateProfile = async (data: Partial<Profile>) => {
     if (!profile) return;
     
     setLoading(true);
     setError('');
     try {
       const updateData = {
-        first_name: data.first_name || profile.first_name,
-        last_name: data.last_name || profile.last_name,
+        name: data.name || profile.name,
         email: data.email || profile.email,
         phone_number: data.phone_number || profile.phone_number,
         bio: data.bio || profile.bio,
-        country: data.country || profile.country,
-        region: data.region || profile.region,
-        postal_code: data.postal_code || profile.postal_code,
       };
       
       const updatedProfile = await apiService.updateProfile(updateData);

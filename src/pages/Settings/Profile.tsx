@@ -6,14 +6,12 @@ import PageBreadcrumb from '../../components/common/PageBreadCrumb';
 import ComponentCard from '../../components/common/ComponentCard';
 import PasswordUpdateModal from '../../components/PasswordUpdateModal';
 
-interface UserProfile {
+interface User {
   id: number;
   name: string;
-  first_name: string;
-  last_name: string;
   email: string;
   phone_number: string;
-  bio?: string;
+  bio: string;
   user_code: string;
   country: string;
   region: string;
@@ -22,23 +20,32 @@ interface UserProfile {
   role_id: number;
 }
 
+interface ProfileFormData {
+  name: string;
+  email: string;
+  phone_number: string;
+  bio: string;
+  country: string;
+  region: string;
+  postal_code: string;
+}
+
 const Profile: React.FC = () => {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    first_name: '',
-    last_name: '',
+  const [formData, setFormData] = useState<ProfileFormData>({
+    name: '',
     email: '',
     phone_number: '',
     bio: '',
     country: '',
     region: '',
-    postal_code: ''
+    postal_code: '',
   });
 
   useEffect(() => {
@@ -47,17 +54,16 @@ const Profile: React.FC = () => {
 
   const fetchProfile = async () => {
     try {
-      const data = await apiService.getProfile() as UserProfile;
+      const data = await apiService.getProfile() as User;
       setProfile(data);
       setFormData({
-        first_name: data.first_name || '',
-        last_name: data.last_name || '',
+        name: data.name || '',
         email: data.email || '',
         phone_number: data.phone_number || '',
         bio: data.bio || '',
         country: data.country || '',
         region: data.region || '',
-        postal_code: data.postal_code || ''
+        postal_code: data.postal_code || '',
       });
     } catch (err: any) {
       setError(err.message || 'Failed to fetch profile');
@@ -80,7 +86,13 @@ const Profile: React.FC = () => {
     setSuccess('');
 
     try {
-      await apiService.updateProfile(formData);
+      const updateData = {
+        name: formData.name.trim(),
+        email: formData.email.trim(),
+        phone_number: formData.phone_number.trim(),
+        bio: formData.bio.trim(),
+      };
+      await apiService.updateProfile(updateData);
       setSuccess('Profile updated successfully!');
       setEditing(false);
       fetchProfile(); // Refresh profile data
@@ -175,7 +187,7 @@ const Profile: React.FC = () => {
             </div>
             <div>
               <h3 className="text-lg font-medium text-gray-900 dark:text-white">
-                {profile?.first_name} {profile?.last_name}
+                {profile?.name}
               </h3>
               <p className="text-sm text-gray-500 dark:text-gray-400">
                 {profile?.email}
@@ -207,8 +219,8 @@ const Profile: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value={formData.first_name}
-                  onChange={(e) => handleInputChange('first_name', e.target.value)}
+                  value={formData.name.split(' ')[0] || ''}
+                  onChange={(e) => handleInputChange('name', `${e.target.value} ${formData.name.split(' ')[1] || ''}`)}
                   disabled={!editing}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:bg-gray-100 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-white"
                   required
@@ -221,8 +233,8 @@ const Profile: React.FC = () => {
                 </label>
                 <input
                   type="text"
-                  value={formData.last_name}
-                  onChange={(e) => handleInputChange('last_name', e.target.value)}
+                  value={formData.name.split(' ')[1] || ''}
+                  onChange={(e) => handleInputChange('name', `${formData.name.split(' ')[0] || ''} ${e.target.value}`)}
                   disabled={!editing}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:bg-gray-100 disabled:cursor-not-allowed dark:bg-gray-800 dark:border-gray-600 dark:text-white"
                   required

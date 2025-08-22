@@ -27,6 +27,16 @@ export const API_ENDPOINTS = {
     SCANNERS: '/users/scanners',
   },
 
+  // Scanners
+  SCANNERS: {
+    AVAILABLE: '/scanners/available',
+    EVENT_SCANNERS: (eventId: number) => `/events/${eventId}/scanners`,
+    ASSIGN: (eventId: number) => `/events/${eventId}/scanners`,
+    UPDATE_ROLE: (eventId: number, scannerId: number) => `/events/${eventId}/scanners/${scannerId}/role`,
+    DEACTIVATE: (eventId: number, scannerId: number) => `/events/${eventId}/scanners/${scannerId}/deactivate`,
+    REACTIVATE: (eventId: number, scannerId: number) => `/events/${eventId}/scanners/${scannerId}/reactivate`,
+  },
+
   // Customers
   CUSTOMERS: {
     LIST: '/customers',

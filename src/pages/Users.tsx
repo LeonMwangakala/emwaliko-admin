@@ -10,17 +10,16 @@ import AddUserModal from "../components/AddUserModal";
 
 interface User {
   id: number;
-  first_name: string;
-  last_name: string;
+  name: string;
   email: string;
   phone_number: string;
-  status: 'active' | 'inactive';
   role_id: number;
+  status: string;
+  user_code: string;
+  bio: string;
   created_at: string;
-  role?: {
-    id: number;
-    name: string;
-  };
+  updated_at: string;
+  role?: Role;
 }
 
 interface UserStatistics {
@@ -412,7 +411,7 @@ const Users: React.FC = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-gray-900 dark:text-white">
-                            {user.first_name} {user.last_name}
+                            {user.name}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-white">

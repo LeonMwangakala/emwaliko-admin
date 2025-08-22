@@ -33,7 +33,7 @@ export default function UserDropdown() {
   };
 
   const profilePictureUrl = getProfilePictureUrl();
-  const displayName = profile ? `${profile.first_name} ${profile.last_name}` : "User";
+  const displayName = profile ? profile.name : "User";
   const displayEmail = profile?.email || "No email";
 
   return (
@@ -88,7 +88,7 @@ export default function UserDropdown() {
         </span>
 
         <span className="block mr-1 font-medium text-theme-sm">
-          {profile?.first_name || "User"}
+          {profile?.name || "User"}
         </span>
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${

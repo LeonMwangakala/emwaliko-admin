@@ -3,12 +3,14 @@ import { apiService } from "../services/api";
 
 interface User {
   id: number;
-  first_name: string;
-  last_name: string;
+  name: string;
   email: string;
   phone_number: string;
-  status: 'active' | 'inactive';
   role_id: number;
+  status: string;
+  created_at: string;
+  updated_at: string;
+  role?: Role;
 }
 
 interface Role {
@@ -25,6 +27,15 @@ interface AddUserModalProps {
   roles: Role[];
 }
 
+interface UserFormData {
+  name: string;
+  email: string;
+  phone_number: string;
+  password: string;
+  role_id: string;
+  status: string;
+}
+
 const AddUserModal: React.FC<AddUserModalProps> = ({
   isOpen,
   onClose,
@@ -33,14 +44,13 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
   user,
   roles
 }) => {
-  const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
+  const [formData, setFormData] = useState<UserFormData>({
+    name: "",
     email: "",
     phone_number: "",
     password: "",
     role_id: "",
-    status: "active"
+    status: "active",
   });
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -50,23 +60,21 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
   useEffect(() => {
     if (user) {
       setFormData({
-        first_name: user.first_name,
-        last_name: user.last_name,
+        name: user.name,
         email: user.email,
         phone_number: user.phone_number,
-        password: "", // Don't populate password for editing
+        password: "", // Password is not editable
         role_id: user.role_id.toString(),
-        status: user.status
+        status: user.status,
       });
     } else {
       setFormData({
-        first_name: "",
-        last_name: "",
+        name: "",
         email: "",
         phone_number: "",
         password: "",
         role_id: "",
-        status: "active"
+        status: "active",
       });
     }
     setErrors({});
@@ -90,12 +98,8 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.first_name.trim()) {
-      newErrors.first_name = "First name is required";
-    }
-
-    if (!formData.last_name.trim()) {
-      newErrors.last_name = "Last name is required";
+    if (!formData.name.trim()) {
+      newErrors.name = "Name is required";
     }
 
     if (!formData.email.trim()) {
@@ -110,7 +114,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 
     if (!isEditing && !formData.password.trim()) {
       newErrors.password = "Password is required";
-    } else if (formData.password.trim() && formData.password.length < 8) {
+    }
+
+    if (!isEditing && formData.password.trim() && formData.password.length < 8) {
       newErrors.password = "Password must be at least 8 characters";
     }
 
@@ -132,17 +138,16 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
     setLoading(true);
     try {
       const submitData = {
-        first_name: formData.first_name.trim(),
-        last_name: formData.last_name.trim(),
+        name: formData.name.trim(),
         email: formData.email.trim(),
         phone_number: formData.phone_number.trim(),
         role_id: parseInt(formData.role_id),
-        status: formData.status
+        status: formData.status,
       };
 
       // Only include password if provided (for editing) or required (for creating)
       if (formData.password.trim()) {
-        (submitData as any).password = formData.password;
+        (submitData as any).password = formData.password.trim();
       }
 
       if (isEditing) {
@@ -186,57 +191,39 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                First Name *
+                Name *
               </label>
               <input
                 type="text"
-                value={formData.first_name}
-                onChange={(e) => handleInputChange('first_name', e.target.value)}
+                value={formData.name}
+                onChange={(e) => handleInputChange('name', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white ${
-                  errors.first_name ? 'border-red-500' : 'border-gray-300'
+                  errors.name ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="First name"
+                placeholder="Name"
               />
-              {errors.first_name && (
-                <p className="text-red-500 text-xs mt-1">{errors.first_name}</p>
+              {errors.name && (
+                <p className="text-red-500 text-xs mt-1">{errors.name}</p>
               )}
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Last Name *
+                Email *
               </label>
               <input
-                type="text"
-                value={formData.last_name}
-                onChange={(e) => handleInputChange('last_name', e.target.value)}
+                type="email"
+                value={formData.email}
+                onChange={(e) => handleInputChange('email', e.target.value)}
                 className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white ${
-                  errors.last_name ? 'border-red-500' : 'border-gray-300'
+                  errors.email ? 'border-red-500' : 'border-gray-300'
                 }`}
-                placeholder="Last name"
+                placeholder="Email address"
               />
-              {errors.last_name && (
-                <p className="text-red-500 text-xs mt-1">{errors.last_name}</p>
+              {errors.email && (
+                <p className="text-red-500 text-xs mt-1">{errors.email}</p>
               )}
             </div>
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Email *
-            </label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => handleInputChange('email', e.target.value)}
-              className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white ${
-                errors.email ? 'border-red-500' : 'border-gray-300'
-              }`}
-              placeholder="Email address"
-            />
-            {errors.email && (
-              <p className="text-red-500 text-xs mt-1">{errors.email}</p>
-            )}
           </div>
 
           <div>
@@ -259,7 +246,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              Password {!isEditing && '*'}
+              Password *
             </label>
             <input
               type="password"

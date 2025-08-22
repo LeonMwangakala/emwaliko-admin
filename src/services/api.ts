@@ -297,14 +297,14 @@ class ApiService {
 
   // Event Scanner management methods
   async getEventScanners(eventId: number) {
-    return this.request(`/events/${eventId}/scanners`);
+    return this.request(API_ENDPOINTS.SCANNERS.EVENT_SCANNERS(eventId));
   }
 
   async assignEventScanner(eventId: number, data: {
     user_id: number;
     role: 'primary' | 'secondary';
   }) {
-    return this.request(`/events/${eventId}/scanners`, {
+    return this.request(API_ENDPOINTS.SCANNERS.ASSIGN(eventId), {
       method: 'POST',
       body: JSON.stringify(data),
     });
@@ -313,26 +313,26 @@ class ApiService {
   async updateEventScannerRole(eventId: number, scannerId: number, data: {
     role: 'primary' | 'secondary';
   }) {
-    return this.request(`/events/${eventId}/scanners/${scannerId}/role`, {
+    return this.request(API_ENDPOINTS.SCANNERS.UPDATE_ROLE(eventId, scannerId), {
       method: 'PUT',
       body: JSON.stringify(data),
     });
   }
 
   async deactivateEventScanner(eventId: number, scannerId: number) {
-    return this.request(`/events/${eventId}/scanners/${scannerId}/deactivate`, {
+    return this.request(API_ENDPOINTS.SCANNERS.DEACTIVATE(eventId, scannerId), {
       method: 'PATCH',
     });
   }
 
   async reactivateEventScanner(eventId: number, scannerId: number) {
-    return this.request(`/events/${eventId}/scanners/${scannerId}/reactivate`, {
+    return this.request(API_ENDPOINTS.SCANNERS.REACTIVATE(eventId, scannerId), {
       method: 'PATCH',
     });
   }
 
   async getAvailableScanners() {
-    return this.request('/scanners/available');
+    return this.request(API_ENDPOINTS.SCANNERS.AVAILABLE);
   }
 
   // Customer management methods
@@ -530,14 +530,10 @@ class ApiService {
   }
 
   async updateProfile(data: {
-    first_name: string;
-    last_name: string;
+    name: string;
     email: string;
     phone_number: string;
     bio?: string;
-    country: string;
-    region: string;
-    postal_code: string;
   }) {
     return this.request(API_ENDPOINTS.PROFILE.UPDATE, {
       method: 'PUT',

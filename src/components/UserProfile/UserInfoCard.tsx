@@ -12,8 +12,7 @@ export default function UserInfoCard() {
   
   // Form state
   const [formData, setFormData] = useState({
-    first_name: "",
-    last_name: "",
+    name: "",
     email: "",
     phone_number: "",
     bio: "",
@@ -22,8 +21,7 @@ export default function UserInfoCard() {
   useEffect(() => {
     if (profile) {
       setFormData({
-        first_name: profile.first_name || "",
-        last_name: profile.last_name || "",
+        name: profile.name || "",
         email: profile.email || "",
         phone_number: profile.phone_number || "",
         bio: profile.bio || "",
@@ -64,18 +62,18 @@ export default function UserInfoCard() {
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                 First Name
               </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {profile.first_name || "Not set"}
-              </p>
+              <div className="text-sm font-medium text-gray-900 dark:text-white">
+                {profile.name || "Not set"}
+              </div>
             </div>
 
             <div>
               <p className="mb-2 text-xs leading-normal text-gray-500 dark:text-gray-400">
                 Last Name
               </p>
-              <p className="text-sm font-medium text-gray-800 dark:text-white/90">
-                {profile.last_name || "Not set"}
-              </p>
+              <div className="text-sm font-medium text-gray-900 dark:text-white">
+                {profile.name || "Not set"}
+              </div>
             </div>
 
             <div>
@@ -161,8 +159,8 @@ export default function UserInfoCard() {
                     <Label>First Name</Label>
                     <Input 
                       type="text" 
-                      value={formData.first_name}
-                      onChange={(e) => handleInputChange('first_name', e.target.value)}
+                      value={formData.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
                     />
                   </div>
 
@@ -170,8 +168,8 @@ export default function UserInfoCard() {
                     <Label>Last Name</Label>
                     <Input 
                       type="text" 
-                      value={formData.last_name}
-                      onChange={(e) => handleInputChange('last_name', e.target.value)}
+                      value={formData.name}
+                      onChange={(e) => handleInputChange('name', e.target.value)}
                     />
                   </div>
 
