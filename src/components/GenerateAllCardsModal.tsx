@@ -1,5 +1,7 @@
-import React, { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, type FC } from 'react';
 import { apiService } from '../services/api';
+import { API_CONFIG } from '../config/api';
+import type { Guest } from '../types/guest';
 
 interface Event {
   id: number;
@@ -20,24 +22,6 @@ interface Event {
   card_class_text_size: number;
 }
 
-interface Guest {
-  id: number;
-  name: string;
-  title?: string;
-  phone_number?: string;
-  card_class_id: number;
-  invite_code: string;
-  qr_code_path?: string;
-  qr_code_base64?: string;
-  rsvp_status: "Yes" | "No" | "Maybe" | "Pending";
-  card_class?: {
-    id: number;
-    name: string;
-    max_guests: number;
-  };
-  guest_card_path?: string;
-}
-
 interface CardType {
   id: number;
   name: string;
@@ -54,7 +38,7 @@ interface GenerateAllCardsModalProps {
   onRefresh?: () => void;
 }
 
-const GenerateAllCardsModal: React.FC<GenerateAllCardsModalProps> = ({
+const GenerateAllCardsModal: FC<GenerateAllCardsModalProps> = ({
   isOpen,
   onClose,
   event,
@@ -76,7 +60,12 @@ const GenerateAllCardsModal: React.FC<GenerateAllCardsModalProps> = ({
   const previewCanvasRef = useRef<HTMLCanvasElement>(null);
   const currentGuestCanvasRef = useRef<HTMLCanvasElement>(null);
   const drawingCanvasRef = useRef<HTMLCanvasElement>(null);
-  const imageRef = useRef<HTMLImageElement>(null);
+
+  const resolveStorageUrl = (path: string) => {
+    const baseUrl = API_CONFIG.BASE_URL.replace(/\/api\/?$/, '');
+    const normalizedPath = path.replace(/^\/?storage\/?/, '');
+    return `${baseUrl}/storage/${normalizedPath}`;
+  };
 
   // Filter guests based on regeneration strategy
   const guestsWithoutCards = guests.filter(guest => !guest.guest_card_path);
@@ -99,16 +88,16 @@ const GenerateAllCardsModal: React.FC<GenerateAllCardsModalProps> = ({
       
       // Fetch all guests for this event (no pagination)
       console.log('About to call getAllEventGuests for event:', event.id);
-      const response = await apiService.getAllEventGuests(event.id) as any;
+      const response = await apiService.getAllEventGuests(event.id) as Guest[] | { data: Guest[] };
       
       console.log('API Response:', response);
       console.log('Response type:', typeof response);
       console.log('Is Array:', Array.isArray(response));
       
-      if (response && Array.isArray(response)) {
+      if (Array.isArray(response)) {
         setGuests(response);
         console.log(`Fetched ${response.length} guests from database`);
-      } else if (response && response.data && Array.isArray(response.data)) {
+      } else if (response && 'data' in response && Array.isArray(response.data)) {
         setGuests(response.data);
         console.log(`Fetched ${response.data.length} guests from database`);
       } else {
@@ -404,9 +393,9 @@ const GenerateAllCardsModal: React.FC<GenerateAllCardsModalProps> = ({
       };
       
       // Construct full URL for QR code
-      const qrCodeUrl = guest.qr_code_path.startsWith('http') 
-        ? guest.qr_code_path 
-        : `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/storage/${guest.qr_code_path}`;
+      const qrCodeUrl = guest.qr_code_path.startsWith('http')
+        ? guest.qr_code_path
+        : resolveStorageUrl(guest.qr_code_path);
       
       qrImage.src = qrCodeUrl;
     } else if (cardType.show_qr_code) {
@@ -427,7 +416,7 @@ const GenerateAllCardsModal: React.FC<GenerateAllCardsModalProps> = ({
     
     try {
       // Call API to delete existing card
-      const response = await apiService.deleteGuestCard(guest.id) as any;
+      const response = await apiService.deleteGuestCard(guest.id);
       return response.success;
     } catch (error) {
       console.error(`Error deleting existing card for guest ${guest.name}:`, error);
@@ -525,7 +514,7 @@ const GenerateAllCardsModal: React.FC<GenerateAllCardsModalProps> = ({
       console.log('Sending to backend...');
       
       // Send to backend
-      const response = await apiService.saveCanvasCard(guest.id, compressedImageData) as any;
+      const response = await apiService.saveCanvasCard(guest.id, compressedImageData);
 
       console.log('Backend response:', response);
 

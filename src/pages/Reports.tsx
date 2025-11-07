@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState, type FC } from "react";
 import { useAuth } from "../context/AuthContext";
 import { apiService } from "../services/api";
 import PageMeta from "../components/common/PageMeta";
@@ -33,7 +33,7 @@ interface FilterOptions {
 
 type ReportType = "events" | "sales" | "guests" | "financial" | "notifications" | "scans";
 
-const Reports: React.FC = () => {
+const Reports: FC = () => {
   const { user } = useAuth();
   const [activeReport, setActiveReport] = useState<ReportType>("events");
   const [reportData, setReportData] = useState<ReportData | null>(null);
@@ -553,7 +553,6 @@ const Reports: React.FC = () => {
       case 'initiated':
       case 'inprogress':
       case 'notified':
-      case 'scanned':
       case 'Maybe':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
       default:

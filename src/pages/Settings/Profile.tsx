@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useAuth } from '../../context/AuthContext';
 import { apiService } from '../../services/api';
 import PageMeta from '../../components/common/PageMeta';
 import PageBreadcrumb from '../../components/common/PageBreadCrumb';
@@ -31,7 +30,6 @@ interface ProfileFormData {
 }
 
 const Profile: React.FC = () => {
-  const { user } = useAuth();
   const [profile, setProfile] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -112,7 +110,7 @@ const Profile: React.FC = () => {
     setSuccess('');
 
     try {
-      const result = await apiService.updateProfilePicture(file);
+      await apiService.updateProfilePicture(file);
       setSuccess('Profile picture updated successfully!');
       fetchProfile(); // Refresh profile data
     } catch (err: any) {

@@ -1,5 +1,7 @@
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState, type FC } from 'react';
 import { apiService } from '../services/api';
+import { API_CONFIG } from '../config/api';
+import type { Guest } from '../types/guest';
 
 interface Event {
   id: number;
@@ -20,16 +22,6 @@ interface Event {
   card_class_text_size: number;
 }
 
-interface Guest {
-  id: number;
-  name: string;
-  invite_code: string;
-  card_class?: {
-    id: number;
-    name: string;
-  };
-}
-
 interface CardType {
   id: number;
   name: string;
@@ -46,7 +38,7 @@ interface CanvasCardGeneratorProps {
   onError?: (error: string) => void;
 }
 
-const CanvasCardGenerator: React.FC<CanvasCardGeneratorProps> = ({
+const CanvasCardGenerator: FC<CanvasCardGeneratorProps> = ({
   guest,
   event,
   cardType,
@@ -57,6 +49,12 @@ const CanvasCardGenerator: React.FC<CanvasCardGeneratorProps> = ({
   const [isGenerating, setIsGenerating] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [cardDesignBase64, setCardDesignBase64] = useState<string>('');
+
+  const resolveStorageUrl = (path: string) => {
+    const baseUrl = API_CONFIG.BASE_URL.replace(/\/api\/?$/, '');
+    const normalizedPath = path.replace(/^\/?storage\/?/, '');
+    return `${baseUrl}/storage/${normalizedPath}`;
+  };
 
   useEffect(() => {
     if (event.card_design_path) {
@@ -140,25 +138,30 @@ const CanvasCardGenerator: React.FC<CanvasCardGeneratorProps> = ({
     const cardClassY = ((event.card_class_position_y ?? 90) / 100) * canvasHeight;
 
     // Helper function to draw text with shadow
-    const drawTextWithShadow = (text: string, x: number, y: number, fontSize: number, color: string = '#000000') => {
-      ctx.font = `bold ${fontSize}px Arial`;
-      ctx.fillStyle = color;
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      
-      // Add text shadow for better visibility
-      ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
-      ctx.shadowBlur = 4;
-      ctx.shadowOffsetX = 2;
-      ctx.shadowOffsetY = 2;
-      
-      ctx.fillText(text, x, y);
-      
-      // Reset shadow
-      ctx.shadowColor = 'transparent';
-      ctx.shadowBlur = 0;
-      ctx.shadowOffsetX = 0;
-      ctx.shadowOffsetY = 0;
+    const drawTextWithShadow = (
+      context: CanvasRenderingContext2D,
+      text: string,
+      x: number,
+      y: number,
+      fontSize: number,
+      color: string = '#000000'
+    ) => {
+      context.font = `bold ${fontSize}px Arial`;
+      context.fillStyle = color;
+      context.textAlign = 'center';
+      context.textBaseline = 'middle';
+
+      context.shadowColor = 'rgba(255, 255, 255, 0.8)';
+      context.shadowBlur = 4;
+      context.shadowOffsetX = 2;
+      context.shadowOffsetY = 2;
+
+      context.fillText(text, x, y);
+
+      context.shadowColor = 'transparent';
+      context.shadowBlur = 0;
+      context.shadowOffsetX = 0;
+      context.shadowOffsetY = 0;
     };
 
     // Function to draw all elements
@@ -175,7 +178,7 @@ const CanvasCardGenerator: React.FC<CanvasCardGeneratorProps> = ({
         const fontSize = event.name_text_size ?? 98;
         const textColor = event.name_text_color ?? '#000000';
         console.log('Drawing guest name:', { name: guest.name, fontSize, textColor, x: nameX, y: nameY });
-        drawTextWithShadow(guest.name, nameX, nameY, fontSize, textColor);
+        drawTextWithShadow(context, guest.name, nameX, nameY, fontSize, textColor);
       }
 
       // Draw card class if enabled
@@ -183,7 +186,7 @@ const CanvasCardGenerator: React.FC<CanvasCardGeneratorProps> = ({
         const fontSize = event.card_class_text_size ?? 60;
         const textColor = event.card_class_text_color ?? '#333333';
         console.log('Drawing card class:', { name: guest.card_class.name, fontSize, textColor, x: cardClassX, y: cardClassY });
-        drawTextWithShadow(guest.card_class.name, cardClassX, cardClassY, fontSize, textColor);
+        drawTextWithShadow(context, guest.card_class.name, cardClassX, cardClassY, fontSize, textColor);
       }
     };
 
@@ -268,10 +271,10 @@ const CanvasCardGenerator: React.FC<CanvasCardGeneratorProps> = ({
       };
       
       // Construct full URL for QR code
-      const qrCodeUrl = guest.qr_code_path.startsWith('http') 
-        ? guest.qr_code_path 
-        : `${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/storage/${guest.qr_code_path}`;
-      
+      const qrCodeUrl = guest.qr_code_path.startsWith('http')
+        ? guest.qr_code_path
+        : resolveStorageUrl(guest.qr_code_path);
+
       qrImage.src = qrCodeUrl;
     } else if (cardType.show_qr_code) {
       // Draw a placeholder rectangle if no QR code
@@ -356,7 +359,7 @@ const CanvasCardGenerator: React.FC<CanvasCardGeneratorProps> = ({
           </div>
           <div>
             <span className="text-gray-500 dark:text-gray-400">Max Guests:</span>
-            <span className="ml-2 font-medium text-gray-900 dark:text-white">{guest.card_class?.max_guests || 'N/A'}</span>
+            <span className="ml-2 font-medium text-gray-900 dark:text-white">{guest.card_class?.max_guests ?? 'N/A'}</span>
           </div>
         </div>
       </div>

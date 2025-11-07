@@ -1,5 +1,4 @@
-import React, { useEffect, useState } from 'react';
-import { useAuth } from '../../context/AuthContext';
+import { useEffect, useState, type FC } from 'react';
 
 interface AutoLogoutModalProps {
   isOpen: boolean;
@@ -8,7 +7,7 @@ interface AutoLogoutModalProps {
   timeRemaining: number;
 }
 
-const AutoLogoutModal: React.FC<AutoLogoutModalProps> = ({
+const AutoLogoutModal: FC<AutoLogoutModalProps> = ({
   isOpen,
   onStayLoggedIn,
   onLogout,

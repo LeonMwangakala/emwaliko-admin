@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState, type FC } from 'react';
 import { apiService } from '../services/api';
 
 interface RegenerateQrCodesModalProps {
@@ -10,7 +10,7 @@ interface RegenerateQrCodesModalProps {
   totalGuests: number;
 }
 
-const RegenerateQrCodesModal: React.FC<RegenerateQrCodesModalProps> = ({
+const RegenerateQrCodesModal: FC<RegenerateQrCodesModalProps> = ({
   isOpen,
   onClose,
   onSuccess,
@@ -24,6 +24,18 @@ const RegenerateQrCodesModal: React.FC<RegenerateQrCodesModalProps> = ({
   const [error, setError] = useState('');
   const [result, setResult] = useState<any>(null);
 
+  const handleCancel = () => {
+    if (!isLoading) {
+      onClose();
+    }
+  };
+
+  const resetProgress = () => {
+    setIsLoading(false);
+    setProgress(0);
+    setCurrentStep('');
+  };
+
   const handleConfirm = async () => {
     setIsLoading(true);
     setProgress(0);
@@ -31,48 +43,34 @@ const RegenerateQrCodesModal: React.FC<RegenerateQrCodesModalProps> = ({
     setResult(null);
     setCurrentStep('Starting QR code regeneration...');
 
-    try {
-      // Simulate progress updates
-      const progressInterval = setInterval(() => {
-        setProgress(prev => {
-          if (prev >= 90) {
-            // clearInterval(progressInterval);
-            return prev;
-          }
-          return prev + 10;
-        });
-      }, 200);
+    const intervalId = window.setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 90) {
+          return prev;
+        }
+        return prev + 10;
+      });
+    }, 200);
 
+    try {
       const response = await apiService.regenerateAllQrCodes(eventId);
-      
-      // clearInterval(progressInterval);
+
+      window.clearInterval(intervalId);
       setProgress(100);
       setCurrentStep('QR codes regenerated successfully!');
       setResult(response);
 
-      // Show completion for 2 seconds then close
       setTimeout(() => {
         onSuccess();
         onClose();
-        // Reset state
-        setIsLoading(false);
-        setProgress(0);
-        setCurrentStep('');
+        resetProgress();
         setResult(null);
+        setError('');
       }, 2000);
-
     } catch (err: any) {
-      // clearInterval(progressInterval);
+      window.clearInterval(intervalId);
       setError(err.message || 'Failed to regenerate QR codes');
-      setIsLoading(false);
-      setProgress(0);
-      setCurrentStep('');
-    }
-  };
-
-  const handleCancel = () => {
-    if (!isLoading) {
-      onClose();
+      resetProgress();
     }
   };
 

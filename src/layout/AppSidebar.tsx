@@ -1,6 +1,6 @@
-import React, { useContext, useState, useRef, useCallback, useEffect } from "react";
+import { useState, useRef, useCallback, useEffect } from "react";
 import { Link, useLocation } from "react-router";
-import { SidebarContext } from "../context/SidebarContext";
+import { useSidebar } from "../context/SidebarContext";
 import { useAuth } from "../context/AuthContext";
 import { NavItem } from "../types/navigation";
 import {
@@ -132,7 +132,7 @@ const othersItems: NavItem[] = [
 ];
 
 const AppSidebar: React.FC = () => {
-  const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useContext(SidebarContext);
+  const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
   const { user } = useAuth();
 
@@ -207,7 +207,7 @@ const AppSidebar: React.FC = () => {
     <ul className="flex flex-col gap-4">
       {items.map((nav, index) => (
         <li key={nav.name}>
-          {'subItems' in nav && nav.subItems ? (
+          {nav.subItems && nav.subItems.length ? (
             <button
               onClick={() => handleSubmenuToggle(index, menuType)}
               className={`menu-item group ${
@@ -244,7 +244,7 @@ const AppSidebar: React.FC = () => {
               )}
             </button>
           ) : (
-            'path' in nav && nav.path && (
+            nav.path ? (
               <Link
                 to={nav.path}
                 className={`menu-item group ${
@@ -264,9 +264,9 @@ const AppSidebar: React.FC = () => {
                   <span className="menu-item-text">{nav.name}</span>
                 )}
               </Link>
-            )
+            ) : null
           )}
-          {'subItems' in nav && nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
+          {nav.subItems && (isExpanded || isHovered || isMobileOpen) && (
             <div
               ref={(el) => {
                 subMenuRefs.current[`${menuType}-${index}`] = el;

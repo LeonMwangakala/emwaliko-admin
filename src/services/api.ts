@@ -21,6 +21,28 @@ export interface ApiError {
   errors?: Record<string, string[]>;
 }
 
+export interface CardDesignResponse {
+  card_design_base64: string;
+}
+
+export interface SaveCanvasCardResponse {
+  success: boolean;
+  card_url: string;
+  message?: string;
+}
+
+export interface DeleteGuestCardResponse {
+  success: boolean;
+  message?: string;
+}
+
+export interface RegenerateQrCodesResponse {
+  message: string;
+  total_guests?: number;
+  success_count?: number;
+  failed_count?: number;
+}
+
 class ApiService {
   private token: string | null = localStorage.getItem('auth_token');
 
@@ -75,7 +97,7 @@ class ApiService {
         throw detailedError;
       }
 
-      return await response.json();
+      return (await response.json()) as T;
     } catch (error) {
       console.error('API Error:', error);
       if (error instanceof Error) {
@@ -180,8 +202,8 @@ class ApiService {
     });
   }
 
-  async regenerateAllQrCodes(eventId: number) {
-    return this.request(`/events/${eventId}/guests/regenerate-qr-codes`, {
+  async regenerateAllQrCodes(eventId: number): Promise<RegenerateQrCodesResponse> {
+    return this.request<RegenerateQrCodesResponse>(`/events/${eventId}/guests/regenerate-qr-codes`, {
       method: 'POST',
     });
   }
@@ -192,8 +214,8 @@ class ApiService {
     });
   }
 
-  async saveCanvasCard(guestId: number, canvasImageData: string) {
-    return this.request('/guests/save-canvas-card', {
+  async saveCanvasCard(guestId: number, canvasImageData: string): Promise<SaveCanvasCardResponse> {
+    return this.request<SaveCanvasCardResponse>('/guests/save-canvas-card', {
       method: 'POST',
       body: JSON.stringify({
         guest_id: guestId,
@@ -275,8 +297,8 @@ class ApiService {
     });
   }
 
-  async getCardDesign(eventId: number) {
-    return this.request(`/events/${eventId}/card-design`);
+  async getCardDesign(eventId: number): Promise<CardDesignResponse> {
+    return this.request<CardDesignResponse>(`/events/${eventId}/card-design`);
   }
 
   // Helper method to convert file to base64
@@ -789,8 +811,8 @@ class ApiService {
   }
 
   // Delete guest card
-  async deleteGuestCard(guestId: number): Promise<any> {
-    return this.request(`/guests/${guestId}/card`, {
+  async deleteGuestCard(guestId: number): Promise<DeleteGuestCardResponse> {
+    return this.request<DeleteGuestCardResponse>(`/guests/${guestId}/card`, {
       method: 'DELETE',
     });
   }

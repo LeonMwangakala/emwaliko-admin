@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, type FC } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate, useParams } from "react-router";
 import { apiService } from "../services/api";
@@ -15,6 +15,7 @@ import GuestCardModal from "../components/GuestCardModal";
 import RegenerateQrCodesModal from "../components/RegenerateQrCodesModal";
 import GuestsTable from "../components/tables/GuestsTable";
 import Pagination from "../components/common/Pagination";
+import type { Guest as GuestType } from "../types/guest";
 
 interface Event {
   id: number;
@@ -80,22 +81,7 @@ interface Event {
   event_code?: string;
 }
 
-interface Guest {
-  id: number;
-  name: string;
-  title?: string;
-  phone_number?: string;
-  card_class_id: number;
-  invite_code: string;
-  qr_code_path?: string;
-  qr_code_base64?: string;
-  rsvp_status: "Yes" | "No" | "Maybe" | "Pending";
-  card_class?: {
-    id: number;
-    name: string;
-    max_guests: number;
-  };
-}
+type Guest = GuestType;
 
 interface Notification {
   id: number;
@@ -133,7 +119,7 @@ interface Scan {
 
 type EventTab = "guests" | "notifications" | "card-design" | "settings" | "scan";
 
-const ViewEvent: React.FC = () => {
+const ViewEvent: FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { id } = useParams<{ id: string }>();
@@ -142,7 +128,6 @@ const ViewEvent: React.FC = () => {
   const [guests, setGuests] = useState<Guest[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [scans, setScans] = useState<Scan[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [uploadSuccess, setUploadSuccess] = useState("");
   const [showNotificationsModal, setShowNotificationsModal] = useState(false);
@@ -177,7 +162,6 @@ const ViewEvent: React.FC = () => {
   }, [user, id]);
 
   const fetchEvent = async () => {
-    setLoading(true);
     try {
       const res = await apiService.getEvent(parseInt(id!)) as Event;
       setEvent(res);
@@ -185,7 +169,6 @@ const ViewEvent: React.FC = () => {
       console.error('Error fetching event:', e);
       setError("Failed to fetch event");
     } finally {
-      setLoading(false);
     }
   };
 
@@ -722,14 +705,8 @@ const ViewEvent: React.FC = () => {
                       setEditingGuest(guest);
                       setShowAddGuestModal(true);
                     }}
-                    onQrCodeRegenerate={(guestId) => {
-                      // Refresh the guests list after QR code regeneration
-                      fetchTabData();
-                    }}
                     searchTerm={searchTerm}
                     onSearchChange={handleSearchChange}
-                    eventId={event?.id}
-                    cardTypeId={event?.card_type?.id}
                     cardDesignPath={event?.card_design_path}
                     onViewCard={handleViewCard}
                     event={event}

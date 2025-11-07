@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect, type FC } from "react";
 import Pagination from "../common/Pagination";
 import { PhoneNumberValidator } from '../../utils/phoneValidation';
 import { Guest } from '../../types/guest';
 import { PaginationProps } from '../../types/pagination';
-import { apiService } from '../../services/api';
 import GenerateAllCardsModal from '../GenerateAllCardsModal';
 
 interface GuestsTableProps {
@@ -11,11 +10,8 @@ interface GuestsTableProps {
   loading?: boolean;
   pagination?: PaginationProps;
   onEdit?: (guest: Guest) => void;
-  onQrCodeRegenerate?: (guestId: number) => void;
   searchTerm?: string;
   onSearchChange?: (searchTerm: string) => void;
-  eventId?: number;
-  cardTypeId?: number;
   cardDesignPath?: string;
   onViewCard?: (guest: Guest) => void;
   event?: any; // Add event prop for card generation
@@ -23,16 +19,13 @@ interface GuestsTableProps {
   onRefresh?: () => void; // Add refresh function prop
 }
 
-const GuestsTable: React.FC<GuestsTableProps> = ({ 
+const GuestsTable: FC<GuestsTableProps> = ({ 
   guests, 
   loading = false,
   pagination,
   onEdit,
-  onQrCodeRegenerate,
   searchTerm = "",
   onSearchChange,
-  eventId,
-  cardTypeId,
   cardDesignPath,
   onViewCard,
   event,
