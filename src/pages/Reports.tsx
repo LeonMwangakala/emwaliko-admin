@@ -152,8 +152,8 @@ const Reports: FC = () => {
       const workbook = new ExcelJS.Workbook();
       
       // Add metadata
-      workbook.creator = 'Kadirafiki Admin';
-      workbook.lastModifiedBy = 'Kadirafiki Admin';
+      workbook.creator = 'eMwaliko Admin';
+      workbook.lastModifiedBy = 'eMwaliko Admin';
       workbook.created = new Date();
       workbook.modified = new Date();
       
@@ -650,7 +650,7 @@ const Reports: FC = () => {
 
   return (
     <>
-      <PageMeta title="Reports | Kadirafiki Admin" description="Comprehensive reports and analytics" />
+      <PageMeta title="Reports | eMwaliko Admin" description="Comprehensive reports and analytics" />
       <PageBreadcrumb pageTitle="Reports & Analytics" />
       
       <div className="space-y-6">

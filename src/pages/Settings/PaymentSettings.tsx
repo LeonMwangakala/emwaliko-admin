@@ -154,7 +154,7 @@ const PaymentSettings: React.FC = () => {
                         value={settings.bank_name}
                         onChange={(e) => handleInputChange('bank_name', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                        placeholder="e.g., Kadirafiki Bank"
+                        placeholder="e.g., eMwaliko Bank"
                       />
                     </div>
                     <div>
@@ -166,7 +166,7 @@ const PaymentSettings: React.FC = () => {
                         value={settings.account_name}
                         onChange={(e) => handleInputChange('account_name', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                        placeholder="e.g., Kadirafiki Events Ltd"
+                        placeholder="e.g., eMwaliko Events Ltd"
                       />
                     </div>
                     <div>
@@ -190,7 +190,7 @@ const PaymentSettings: React.FC = () => {
                         value={settings.swift_code}
                         onChange={(e) => handleInputChange('swift_code', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                        placeholder="e.g., KADITZTZ"
+                        placeholder="e.g., EMWLKZZZ"
                       />
                     </div>
                   </div>
@@ -235,7 +235,7 @@ const PaymentSettings: React.FC = () => {
                         value={settings.payment_name}
                         onChange={(e) => handleInputChange('payment_name', e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                        placeholder="e.g., Kadirafiki Events"
+                        placeholder="e.g., eMwaliko Events"
                       />
                     </div>
                     <div className="md:col-span-2">

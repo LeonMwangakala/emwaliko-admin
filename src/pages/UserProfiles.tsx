@@ -8,7 +8,7 @@ export default function UserProfiles() {
   return (
     <>
       <PageMeta
-        title="KadiRafike | User Profile"
+        title="eMwaliko | User Profile"
         description="Card Management System"
       />
       <PageBreadcrumb pageTitle="User Profile" />

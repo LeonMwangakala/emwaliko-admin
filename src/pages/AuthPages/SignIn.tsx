@@ -6,7 +6,7 @@ export default function SignIn() {
   return (
     <>
       <PageMeta
-        title="KadiRafiki | Sign In"
+        title="eMwaliko | Sign In"
         description="Event Invitation Card Management System"
       />
       <AuthLayout>

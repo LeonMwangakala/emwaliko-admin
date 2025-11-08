@@ -1,6 +1,6 @@
 # API Configuration System
 
-This directory contains the centralized API configuration for the KadiRafiki Admin application.
+This directory contains the centralized API configuration for the eMwaliko Admin application.
 
 ## Files
 
@@ -54,7 +54,7 @@ Create a `.env` file in the project root with:
 VITE_API_BASE_URL=http://localhost:8000/api
 
 # App Configuration
-VITE_APP_NAME=KadiRafiki Admin
+VITE_APP_NAME=eMwaliko Admin
 VITE_APP_VERSION=1.0.0
 
 # Development Configuration

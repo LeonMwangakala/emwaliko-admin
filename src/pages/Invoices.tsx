@@ -271,11 +271,11 @@ const Invoices: React.FC = () => {
     doc.text('From:', 40, 170);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(12);
-    doc.text('Kadirafiki Events', 40, 190);
+    doc.text('eMwaliko Events', 40, 190);
     doc.text('Event Management Services', 40, 205);
     doc.text('Dar es Salaam, Tanzania', 40, 220);
     doc.text('Phone: +255 123 456 789', 40, 235);
-    doc.text('Email: info@kadirafiki.com', 40, 250);
+    doc.text('Email: support@emwaliko.com', 40, 250);
     doc.text(`Issued On: ${formatDate(invoice.invoice_date)}`, 40, 265);
     
     // Add "To" address on the right
@@ -396,7 +396,7 @@ const Invoices: React.FC = () => {
     doc.setFontSize(10);
     doc.setFont('helvetica', 'italic');
     doc.setTextColor(107, 114, 128);
-    doc.text('Thank you for choosing Kadirafiki Events!', pageWidth / 2, pageHeight - 40, { align: 'center' });
+    doc.text('Thank you for choosing eMwaliko Events!', pageWidth / 2, pageHeight - 40, { align: 'center' });
     
     // Save with invoice number as filename
     doc.save(`${invoice.invoice_number}.pdf`);
@@ -625,7 +625,7 @@ const Invoices: React.FC = () => {
                       <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">From</h3>
                       <div className="space-y-2">
                         <p className="text-sm font-medium text-gray-900 dark:text-white">
-                          Kadirafiki Events
+                          eMwaliko Events
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-400">
                           Event Management Services

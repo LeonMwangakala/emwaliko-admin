@@ -131,7 +131,7 @@ const Home: React.FC = () => {
 
   return (
     <>
-      <PageMeta title="Dashboard | Kadirafiki Admin" description="Event management dashboard" />
+      <PageMeta title="Dashboard | eMwaliko Admin" description="Event management dashboard" />
       
       <div className="space-y-6">
         {/* Welcome Section */}

@@ -132,7 +132,7 @@ const SendNotificationsModal: React.FC<SendNotificationsModalProps> = ({
       .replace(/{event_time}/g, formatTime(event.event_date))
       .replace(/{event_location}/g, event.event_location || 'TBD')
       .replace(/{invite_code}/g, guest.invite_code || 'KRGC123456')
-      .replace(/{rsvp_url}/g, `https://kadirafiki.com/rsvp/${guest.invite_code || 'KRGC123456'}`)
+      .replace(/{rsvp_url}/g, `https://emwaliko.com/rsvp/${guest.invite_code || 'KRGC123456'}`)
       .replace(/{mpesa_number}/g, '+255700000000')
       .replace(/{airtel_number}/g, '+255750000000');
   };
