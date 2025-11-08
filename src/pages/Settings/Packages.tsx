@@ -16,7 +16,7 @@ interface Package {
 }
 
 const Packages: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [packages, setPackages] = useState<Package[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -28,13 +28,9 @@ const Packages: React.FC = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!user) return;
-    if (user.role_id !== 1) {
-      // Not admin
-      return;
-    }
+    if (!user || !isAdmin) return;
     fetchPackages();
-  }, [user]);
+  }, [user, isAdmin]);
 
   const fetchPackages = async () => {
     setLoading(true);
@@ -99,7 +95,7 @@ const Packages: React.FC = () => {
   };
 
   if (!user) return null;
-  if (user.role_id !== 1) return <NotAuthorized />;
+  if (!isAdmin) return <NotAuthorized />;
 
   return (
     <>

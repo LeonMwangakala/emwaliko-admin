@@ -14,6 +14,7 @@ interface User {
   email: string;
   phone_number: string;
   role_id: number;
+  role_name: string;
   status: string;
   user_code: string;
   bio: string;
@@ -36,7 +37,7 @@ interface Role {
 }
 
 const Users: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [users, setUsers] = useState<User[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
   const [statistics, setStatistics] = useState<UserStatistics | null>(null);
@@ -200,13 +201,13 @@ const Users: React.FC = () => {
     }
   };
 
-  const getRoleBadgeClass = (roleId: number) => {
-    switch (roleId) {
-      case 1: // Admin
+  const getRoleBadgeClass = (roleName?: string) => {
+    switch ((roleName || '').toLowerCase()) {
+      case 'admin':
         return 'bg-purple-100 text-purple-800 dark:bg-purple-900/20 dark:text-purple-400';
-      case 2: // Scanner
+      case 'scanner':
         return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400';
-      case 3: // Customer
+      case 'customer':
         return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
       default:
         return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300';
@@ -216,7 +217,7 @@ const Users: React.FC = () => {
   if (!user) return null;
 
   // Only admin can access this page
-  if (user.role_id !== 1) {
+  if (!isAdmin) {
     return <NotAuthorized />;
   }
 
@@ -421,8 +422,8 @@ const Users: React.FC = () => {
                           {user.phone_number}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeClass(user.role_id)}`}>
-                            {user.role?.name || 'Unknown'}
+                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getRoleBadgeClass(user.role?.name || user.role_name)}`}>
+                            {user.role?.name || user.role_name || 'Unknown'}
                           </span>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">

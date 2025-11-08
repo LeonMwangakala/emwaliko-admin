@@ -14,7 +14,7 @@ interface CardType {
 }
 
 const CardTypes: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [cardTypes, setCardTypes] = useState<CardType[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -24,13 +24,9 @@ const CardTypes: React.FC = () => {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    if (!user) return;
-    if (user.role_id !== 1) {
-      // Not admin
-      return;
-    }
+    if (!user || !isAdmin) return;
     fetchCardTypes();
-  }, [user]);
+  }, [user, isAdmin]);
 
   const fetchCardTypes = async () => {
     setLoading(true);
@@ -83,7 +79,7 @@ const CardTypes: React.FC = () => {
   };
 
   if (!user) return null;
-  if (user.role_id !== 1) return <NotAuthorized />;
+  if (!isAdmin) return <NotAuthorized />;
 
   return (
     <>

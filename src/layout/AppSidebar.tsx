@@ -134,10 +134,9 @@ const othersItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const location = useLocation();
-  const { user } = useAuth();
+  const { isAdmin } = useAuth();
 
-  // Determine menu based on role (role_id === 1 is admin)
-  const navItems = user && user.role_id === 1 ? adminNavItems : userNavItems;
+  const navItems = isAdmin ? adminNavItems : userNavItems;
 
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";

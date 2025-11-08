@@ -1,13 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode, useCallback, useRef } from 'react';
 import { apiService, LoginCredentials, LoginResponse } from '../services/api';
 
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  phone_number: string;
-  role_id: number;
-}
+type User = LoginResponse['user'];
 
 interface AuthContextType {
   user: User | null;
@@ -15,6 +9,8 @@ interface AuthContextType {
   login: (credentials: LoginCredentials) => Promise<void>;
   logout: () => Promise<void>;
   isAuthenticated: boolean;
+  isAdmin: boolean;
+  isScanner: boolean;
   resetInactivityTimer: () => void;
   showAutoLogoutModal: boolean;
   onStayLoggedIn: () => void;
@@ -163,12 +159,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const isAdmin = !!user && user.role_name?.toLowerCase() === 'admin';
+  const isScanner = !!user && user.role_name?.toLowerCase() === 'scanner';
+
   const value: AuthContextType = {
     user,
     loading,
     login,
     logout,
     isAuthenticated: !!user,
+    isAdmin,
+    isScanner,
     resetInactivityTimer,
     showAutoLogoutModal,
     onStayLoggedIn,

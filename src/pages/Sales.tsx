@@ -28,7 +28,7 @@ interface Sales {
 }
 
 const Sales: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [sales, setSales] = useState<Sales[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -157,7 +157,7 @@ const Sales: React.FC = () => {
   if (!user) return null;
 
   // Only admin can access this page
-  if (user.role_id !== 1) {
+  if (!isAdmin) {
     return <NotAuthorized />;
   }
 

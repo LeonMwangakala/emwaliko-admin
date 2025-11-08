@@ -19,7 +19,7 @@ interface Customer {
 }
 
 const Customers: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [customers, setCustomers] = useState<Customer[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -47,13 +47,9 @@ const Customers: React.FC = () => {
   const [totalPages, setTotalPages] = useState(0);
 
   useEffect(() => {
-    if (!user) return;
-    if (user.role_id !== 1) {
-      // Not admin
-      return;
-    }
+    if (!user || !isAdmin) return;
     fetchCustomers();
-  }, [user, currentPage, itemsPerPage, searchTerm]);
+  }, [user, isAdmin, currentPage, itemsPerPage, searchTerm]);
 
   // Debounced search effect
   useEffect(() => {
@@ -183,7 +179,7 @@ const Customers: React.FC = () => {
   };
 
   if (!user) return null;
-  if (user.role_id !== 1) return <NotAuthorized />;
+  if (!isAdmin) return <NotAuthorized />;
 
   return (
     <>

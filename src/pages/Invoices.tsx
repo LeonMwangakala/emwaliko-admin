@@ -61,7 +61,7 @@ interface InvoiceStatistics {
 }
 
 const Invoices: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
   const [statistics, setStatistics] = useState<InvoiceStatistics | null>(null);
@@ -440,7 +440,7 @@ const Invoices: React.FC = () => {
   if (!user) return null;
 
   // Only admin can access this page
-  if (user.role_id !== 1) {
+  if (!isAdmin) {
     return <NotAuthorized />;
   }
 

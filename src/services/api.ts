@@ -12,6 +12,7 @@ export interface LoginResponse {
     email: string;
     phone_number: string;
     role_id: number;
+    role_name: string;
   };
   token: string;
 }
@@ -132,8 +133,8 @@ class ApiService {
     }
   }
 
-  async getUser(): Promise<any> {
-    return this.request(API_ENDPOINTS.AUTH.USER);
+  async getUser(): Promise<LoginResponse['user']> {
+    return this.request<LoginResponse['user']>(API_ENDPOINTS.AUTH.USER);
   }
 
   async getScannerUsers(): Promise<any> {

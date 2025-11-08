@@ -21,7 +21,7 @@ interface PaymentSettings {
 }
 
 const PaymentSettings: React.FC = () => {
-  const { user } = useAuth();
+  const { user, isAdmin } = useAuth();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -82,7 +82,7 @@ const PaymentSettings: React.FC = () => {
   if (!user) return null;
 
   // Only admin can access this page
-  if (user.role_id !== 1) {
+  if (!isAdmin) {
     return <NotAuthorized />;
   }
 
