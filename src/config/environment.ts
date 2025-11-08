@@ -6,28 +6,44 @@ interface EnvironmentConfig {
   DEBUG: boolean;
 }
 
+const normalizeApiBaseUrl = (url: string): string => {
+  if (!url) {
+    return url;
+  }
+
+  return url
+    .replace('staging-api.kadirafiki.com', 'api.emwaliko.com')
+    .replace('api.kadirafiki.com', 'api.emwaliko.com');
+};
+
 // Get environment variables or use defaults
 const getEnvVar = (key: string, defaultValue: string): string => {
-  return import.meta.env[key] || defaultValue;
+  const value = import.meta.env[key] || defaultValue;
+
+  if (key === 'VITE_API_BASE_URL') {
+    return normalizeApiBaseUrl(value);
+  }
+
+  return value;
 };
 
 // Environment configurations
 const environments: Record<string, EnvironmentConfig> = {
   development: {
     API_BASE_URL: getEnvVar('VITE_API_BASE_URL', 'http://localhost:8000/api'),
-    APP_NAME: 'KadiRafiki Admin (Dev)',
+    APP_NAME: 'eMwaliko Admin (Dev)',
     APP_VERSION: '1.0.0',
     DEBUG: true,
   },
   staging: {
-    API_BASE_URL: getEnvVar('VITE_API_BASE_URL', 'https://staging-api.kadirafiki.com/api'),
-    APP_NAME: 'KadiRafiki Admin (Staging)',
+    API_BASE_URL: getEnvVar('VITE_API_BASE_URL', 'https://api.emwaliko.com/api'),
+    APP_NAME: 'eMwaliko Admin (Staging)',
     APP_VERSION: '1.0.0',
     DEBUG: true,
   },
   production: {
-    API_BASE_URL: getEnvVar('VITE_API_BASE_URL', 'https://api.kadirafiki.com/api'),
-    APP_NAME: 'KadiRafiki Admin',
+    API_BASE_URL: getEnvVar('VITE_API_BASE_URL', 'https://api.emwaliko.com/api'),
+    APP_NAME: 'eMwaliko Admin',
     APP_VERSION: '1.0.0',
     DEBUG: false,
   },
