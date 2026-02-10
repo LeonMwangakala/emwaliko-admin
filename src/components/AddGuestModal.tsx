@@ -14,6 +14,7 @@ interface AddGuestModalProps {
     name: string;
     title?: string;
     phone_number?: string;
+    table_number?: number | null;
     card_class_id: number;
   } | null;
 }
