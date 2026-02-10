@@ -11,6 +11,7 @@ interface Package {
   id: number;
   name: string;
   amount: number;
+  description?: string | null;
   currency: string;
   status: "Active" | "Inactive";
 }
@@ -24,6 +25,7 @@ const Packages: React.FC = () => {
   const [selectedPackage, setSelectedPackage] = useState<Package | null>(null);
   const [newName, setNewName] = useState("");
   const [newAmount, setNewAmount] = useState("");
+  const [newDescription, setNewDescription] = useState("");
   const [newCurrency, setNewCurrency] = useState("TZS");
   const [error, setError] = useState("");
 
@@ -51,11 +53,13 @@ const Packages: React.FC = () => {
       await apiService.createPackage({ 
         name: newName, 
         amount: parseFloat(newAmount),
+        description: newDescription || null,
         currency: newCurrency
       });
       setShowCreateModal(false);
       setNewName("");
       setNewAmount("");
+      setNewDescription("");
       setNewCurrency("TZS");
       fetchPackages();
     } catch (e) {
@@ -71,12 +75,14 @@ const Packages: React.FC = () => {
       await apiService.updatePackage(selectedPackage.id, { 
         name: newName, 
         amount: parseFloat(newAmount),
+        description: newDescription || null,
         currency: newCurrency
       });
       setShowEditModal(false);
       setSelectedPackage(null);
       setNewName("");
       setNewAmount("");
+      setNewDescription("");
       setNewCurrency("TZS");
       fetchPackages();
     } catch (e) {
@@ -122,6 +128,7 @@ const Packages: React.FC = () => {
                 setSelectedPackage(pkg);
                 setNewName(pkg.name);
                 setNewAmount(pkg.amount.toString());
+                  setNewDescription(pkg.description || "");
                 setNewCurrency(pkg.currency);
                 setShowEditModal(true);
               }}
@@ -144,6 +151,13 @@ const Packages: React.FC = () => {
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 required
+              />
+              <textarea
+                className="w-full mb-4 px-3 py-2 border rounded"
+                placeholder="Description (optional)"
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                rows={3}
               />
               <input
                 type="number"
@@ -199,6 +213,13 @@ const Packages: React.FC = () => {
                 value={newName}
                 onChange={(e) => setNewName(e.target.value)}
                 required
+              />
+              <textarea
+                className="w-full mb-4 px-3 py-2 border rounded"
+                placeholder="Description (optional)"
+                value={newDescription}
+                onChange={(e) => setNewDescription(e.target.value)}
+                rows={3}
               />
               <input
                 type="number"

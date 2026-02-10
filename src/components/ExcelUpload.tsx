@@ -10,6 +10,7 @@ interface ExcelUploadProps {
 interface GuestData {
   name: string;
   title?: string;
+  table_number?: number | null;
   card_type_id: number;
 }
 
@@ -55,10 +56,15 @@ const ExcelUpload: React.FC<ExcelUploadProps> = ({ eventId, onSuccess, onError }
           for (let i = 1; i < jsonData.length; i++) {
             const row = jsonData[i] as any[];
             if (row && row.length >= 1 && row[0]) {
+              const rawTableNumber = row[2];
               guests.push({
                 name: row[0]?.toString() || '',
                 title: row[1]?.toString() || '',
-                card_type_id: parseInt(row[2]) || 1, // Default to card type ID 1
+                table_number:
+                  rawTableNumber !== undefined && rawTableNumber !== null && rawTableNumber !== ''
+                    ? parseInt(rawTableNumber, 10) || null
+                    : null,
+                card_type_id: parseInt(row[3]) || 1, // Default to card type ID 1
               });
             }
           }
@@ -151,7 +157,7 @@ const ExcelUpload: React.FC<ExcelUploadProps> = ({ eventId, onSuccess, onError }
 
       <div className="text-sm text-gray-600 dark:text-gray-400">
         <p>Supported formats: .xlsx, .xls, .csv</p>
-        <p>Expected columns: Name, Title (optional), Card Type ID</p>
+        <p>Expected columns: Name, Title (optional), Table Number (optional), Card Type ID</p>
         <p>First row should be headers</p>
       </div>
     </div>

@@ -527,14 +527,14 @@ class ApiService {
     return this.request(API_ENDPOINTS.PACKAGES.LIST);
   }
 
-  async createPackage(data: { name: string; amount: number; currency?: string }) {
+  async createPackage(data: { name: string; amount: number; description?: string | null; currency?: string }) {
     return this.request(API_ENDPOINTS.PACKAGES.CREATE, {
       method: 'POST',
       body: JSON.stringify(data),
     });
   }
 
-  async updatePackage(id: number, data: { name: string; amount: number; currency?: string }) {
+  async updatePackage(id: number, data: { name: string; amount: number; description?: string | null; currency?: string }) {
     return this.request(API_ENDPOINTS.PACKAGES.UPDATE(id), {
       method: 'PUT',
       body: JSON.stringify(data),

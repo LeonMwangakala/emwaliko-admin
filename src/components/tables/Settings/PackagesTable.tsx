@@ -11,6 +11,7 @@ interface Package {
   id: number;
   name: string;
   amount: number;
+  description?: string | null;
   currency: string;
   status: "Active" | "Inactive";
 }
@@ -49,6 +50,12 @@ const PackagesTable: React.FC<Props> = ({ packages, onEdit, onToggleStatus }) =>
               isHeader
               className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
             >
+              Description
+            </TableCell>
+            <TableCell
+              isHeader
+              className="px-5 py-3 font-medium text-gray-500 text-start text-theme-xs dark:text-gray-400"
+            >
               Currency
             </TableCell>
             <TableCell
@@ -72,6 +79,9 @@ const PackagesTable: React.FC<Props> = ({ packages, onEdit, onToggleStatus }) =>
               <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">{pkg.name}</TableCell>
               <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">
                 {pkg.amount.toLocaleString()}
+              </TableCell>
+              <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400 max-w-xs truncate" title={pkg.description || undefined}>
+                {pkg.description || "-"}
               </TableCell>
               <TableCell className="px-4 py-3 text-gray-500 text-start text-theme-sm dark:text-gray-400">{pkg.currency}</TableCell>
               <TableCell className="px-4 py-3 text-start">

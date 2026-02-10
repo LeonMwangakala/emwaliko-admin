@@ -35,6 +35,7 @@ const AddGuestModal: React.FC<AddGuestModalProps> = ({
     name: '',
     title: '',
     phone_number: '',
+    table_number: '',
     card_class_id: ''
   });
   const [cardClasses, setCardClasses] = useState<CardClass[]>([]);
@@ -56,6 +57,7 @@ const AddGuestModal: React.FC<AddGuestModalProps> = ({
           name: guest.name || '',
           title: guest.title || '',
           phone_number: guest.phone_number || '',
+          table_number: guest.table_number ? String(guest.table_number) : '',
           card_class_id: guest.card_class_id ? String(guest.card_class_id) : ''
         });
       } else {
@@ -63,6 +65,7 @@ const AddGuestModal: React.FC<AddGuestModalProps> = ({
           name: '',
           title: '',
           phone_number: '',
+          table_number: '',
           card_class_id: ''
         });
       }
@@ -130,6 +133,9 @@ const AddGuestModal: React.FC<AddGuestModalProps> = ({
           name: formData.name.trim(),
           title: formData.title.trim() || null,
           phone_number: formData.phone_number.trim(),
+          table_number: formData.table_number
+            ? parseInt(formData.table_number, 10)
+            : null,
           card_class_id: parseInt(formData.card_class_id),
         });
       } else {
@@ -138,6 +144,9 @@ const AddGuestModal: React.FC<AddGuestModalProps> = ({
           name: formData.name.trim(),
           title: formData.title.trim() || null,
           phone_number: formData.phone_number.trim(),
+           table_number: formData.table_number
+             ? parseInt(formData.table_number, 10)
+             : null,
           card_class_id: parseInt(formData.card_class_id),
           event_id: eventId
         });
@@ -148,6 +157,7 @@ const AddGuestModal: React.FC<AddGuestModalProps> = ({
         name: '',
         title: '',
         phone_number: '',
+        table_number: '',
         card_class_id: ''
       });
     } catch (error) {
@@ -242,6 +252,21 @@ const AddGuestModal: React.FC<AddGuestModalProps> = ({
             required
             label="Phone Number *"
           />
+
+          {/* Table Number */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              Table Number (Optional)
+            </label>
+            <input
+              type="number"
+              min={1}
+              value={formData.table_number}
+              onChange={(e) => handleInputChange('table_number', e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-brand-500 dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+              placeholder="Enter table number"
+            />
+          </div>
 
           {/* Card Class */}
           <div>

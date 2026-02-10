@@ -3,6 +3,7 @@ export interface Guest {
   name: string;
   title?: string;
   phone_number?: string;
+  table_number?: number | null;
   card_class_id: number;
   invite_code: string;
   qr_code_path?: string;
