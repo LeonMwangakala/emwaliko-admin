@@ -15,6 +15,7 @@ interface ParsedGuest {
   name: string;
   title?: string;
   phone_number: string;
+  table_number?: number | null;
   card_class_id: number;
   rowNumber: number;
   isValid: boolean;
@@ -41,24 +42,28 @@ const ExcelUploadModal: React.FC<ExcelUploadModalProps> = ({
         Name: 'John Doe',
         Title: 'Mr.',
         'Phone Number': '0712345678',
+        'Table Number': 1,
         'Card Class': 1
       },
       {
         Name: 'Jane Smith',
         Title: 'Ms.',
         'Phone Number': '0612345678',
+        'Table Number': 2,
         'Card Class': 2
       },
       {
         Name: 'Bob Johnson',
         Title: 'Dr.',
         'Phone Number': '0812345678',
+        'Table Number': '',
         'Card Class': 3
       },
       {
         Name: 'Alice Brown',
         Title: 'Mrs.',
         'Phone Number': '0712345678',
+        'Table Number': 1,
         'Card Class': 1
       }
     ];
@@ -99,6 +104,18 @@ const ExcelUploadModal: React.FC<ExcelUploadModalProps> = ({
       }
     }
     
+    // Validate table number - optional, but if provided must be a positive integer
+    let tableNumber: number | null = null;
+    const tableNumberStr = data['Table Number']?.trim() || '';
+    if (tableNumberStr) {
+      const parsedTableNumber = parseInt(tableNumberStr);
+      if (isNaN(parsedTableNumber) || parsedTableNumber < 1) {
+        errors.push('Table Number must be a positive integer');
+      } else {
+        tableNumber = parsedTableNumber;
+      }
+    }
+    
     // Validate card class - convert to number and validate
     const cardClassStr = data['Card Class']?.trim() || '';
     const cardClass = parseInt(cardClassStr);
@@ -110,6 +127,7 @@ const ExcelUploadModal: React.FC<ExcelUploadModalProps> = ({
       name: data.Name?.trim() || '',
       title: data.Title?.trim() || '',
       phone_number: data['Phone Number']?.trim() || '',
+      table_number: tableNumber,
       card_class_id: cardClass,
       rowNumber,
       isValid: errors.length === 0,
@@ -179,7 +197,8 @@ const ExcelUploadModal: React.FC<ExcelUploadModalProps> = ({
           Name: String(row[0] || ''),
           Title: String(row[1] || ''),
           'Phone Number': String(row[2] || ''),
-          'Card Class': String(row[3] || '')
+          'Table Number': String(row[3] || ''),
+          'Card Class': String(row[4] || '')
         };
         
         const validatedGuest = validateGuestData(rowData, index + 2, uploadedPhoneNumbers);
@@ -222,8 +241,8 @@ const ExcelUploadModal: React.FC<ExcelUploadModalProps> = ({
         name: guest.name,
         title: guest.title || null,
         phone_number: guest.phone_number,
-        card_class_id: guest.card_class_id,
-        event_id: eventId
+        table_number: guest.table_number || null,
+        card_class_id: guest.card_class_id
       }));
 
       const response = await fetch(`${API_CONFIG.BASE_URL}${API_ENDPOINTS.GUESTS.BULK_CREATE(eventId)}`, {
@@ -289,12 +308,12 @@ const ExcelUploadModal: React.FC<ExcelUploadModalProps> = ({
               </h4>
               <ul className="text-sm text-blue-700 dark:text-blue-400 space-y-1">
                 <li>• Supported formats: .xlsx, .xls, .csv</li>
-                <li>• Expected columns: Name, Title (optional), Phone Number, Card Class</li>
+                <li>• Expected columns: Name, Title (optional), Phone Number, Table Number (optional), Card Class</li>
                 <li>• First row should be headers</li>
                 <li>• Keep the column structure exactly as shown in the template</li>
                 <li>• Card Class values: 1 = SINGLE, 2 = DOUBLE, 3 = MULTIPLE</li>
                 <li>• Phone Number should include country code (e.g., +255 123 456 789)</li>
-                <li>• Title is optional and can be left empty</li>
+                <li>• Title and Table Number are optional and can be left empty</li>
               </ul>
             </div>
 
@@ -430,6 +449,9 @@ const ExcelUploadModal: React.FC<ExcelUploadModalProps> = ({
                         Phone Number
                       </th>
                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                        Table Number
+                      </th>
+                      <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                         Card Class
                       </th>
                       <th className="px-3 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">
@@ -454,6 +476,9 @@ const ExcelUploadModal: React.FC<ExcelUploadModalProps> = ({
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                           {guest.phone_number}
+                        </td>
+                        <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
+                          {guest.table_number ?? '-'}
                         </td>
                         <td className="px-3 py-2 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                           {guest.card_class_id} ({getCardClassName(guest.card_class_id)})
